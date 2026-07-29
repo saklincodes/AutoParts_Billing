@@ -636,4 +636,24 @@ document.addEventListener('DOMContentLoaded', function () {
   if (typeof AppDB !== 'undefined' && AppDB.initBackButton) {
     AppDB.initBackButton();
   }
+
+  // Smooth Page Transition Interceptor
+  document.addEventListener('click', function (e) {
+    var a = e.target ? e.target.closest('a') : null;
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (href && href !== '#' && !href.startsWith('javascript:') && href.indexOf('.html') !== -1) {
+      e.preventDefault();
+      var overlay = document.querySelector('.page-exit-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'page-exit-overlay';
+        document.body.appendChild(overlay);
+      }
+      overlay.classList.add('active');
+      setTimeout(function () {
+        window.location.href = href;
+      }, 140);
+    }
+  });
 });

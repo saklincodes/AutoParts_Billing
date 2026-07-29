@@ -49,7 +49,16 @@
     function navigateToDashboard() {
       if (navStarted) return;
       navStarted = true;
-      window.location.replace('dashboard/code.html');
+      var overlay = document.querySelector('.page-exit-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'page-exit-overlay';
+        document.body.appendChild(overlay);
+      }
+      overlay.classList.add('active');
+      setTimeout(function() {
+        window.location.replace('dashboard/code.html');
+      }, 150);
     }
 
     setTimeout(function() {

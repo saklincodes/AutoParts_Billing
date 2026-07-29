@@ -1,0 +1,336 @@
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={theme:{extend:{"colors":{"on-tertiary":"#ffffff","secondary-container":"#cfe6f2","surface-tint":"#4c56af","surface-container-low":"#f3f4f5","surface-container":"#edeeef","on-secondary":"#ffffff","error":"#ba1a1a","on-primary-fixed-variant":"#343d96","on-primary-fixed":"#000767","inverse-surface":"#2e3132","surface-variant":"#e1e3e4","tertiary":"#331000","outline-variant":"#c6c5d4","on-surface-variant":"#454652","inverse-primary":"#bdc2ff","secondary-fixed":"#cfe6f2","secondary":"#4c616c","secondary-fixed-dim":"#b4cad6","on-primary":"#ffffff","on-tertiary-container":"#fa6d00","on-error":"#ffffff","primary-container":"#1a237e","on-tertiary-fixed-variant":"#793100","on-secondary-container":"#526772","surface-bright":"#f8f9fa","on-tertiary-fixed":"#341100","on-background":"#191c1d","surface-container-lowest":"#ffffff","primary":"#000666","tertiary-fixed":"#ffdbcb","background":"#f8f9fa","outline":"#767683","on-secondary-fixed":"#071e27","tertiary-container":"#542000","surface-container-highest":"#e1e3e4","primary-fixed-dim":"#bdc2ff","primary-fixed":"#e0e0ff","inverse-on-surface":"#f0f1f2","surface":"#f8f9fa","surface-container-high":"#e7e8e9","on-primary-container":"#8690ee","on-secondary-fixed-variant":"#354a53","error-container":"#ffdad6","on-surface":"#191c1d","on-error-container":"#93000a","tertiary-fixed-dim":"#ffb691","surface-dim":"#d9dadb"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"lg":"24px","gutter":"24px","sm":"8px","margin-desktop":"32px","base":"4px","xl":"32px","md":"16px","margin-mobile":"16px","xs":"4px"},"fontFamily":{"body-md":["Inter"],"body-lg":["Inter"],"label-lg":["Inter"],"title-lg":["Inter"],"label-md":["Inter"],"headline-lg":["Inter"],"headline-sm":["Inter"],"headline-md":["Inter"],"headline-lg-mobile":["Inter"]},"fontSize":{"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.1px","fontWeight":"600"}],"title-lg":["18px",{"lineHeight":"24px","fontWeight":"600"}],"label-md":["12px",{"lineHeight":"16px","fontWeight":"500"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"600"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],"headline-lg-mobile":["28px",{"lineHeight":"36px","fontWeight":"700"}]}}}}</script><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/></head><body class="bg-background font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col shadow-[1px_0_8px_rgba(0,0,0,0.02)] overflow-y-auto"><div class="p-lg mb-base flex flex-col gap-xs"><div class="flex items-center gap-md"><img alt="AutoParts Billing logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLuvIrNaIfXRA6BPlb9HQ9Zgrih5ifjPd-wRDf17Xikfw6qTLCB85tbFDSdDy-WOmgH5C7VbWMnx1aiUsqmPB53QX56HdhK9oV599l0yytOgGCfFKyqiprCgLP0SU0508nJm-rWGyzjsiWpGpozfhwrbThNSkafPnUCnObbKQbSSOCjrL2-tQr7aBd4shqSJKG4Ny_0AbdRVlF3fTw2DppEZsHIgSWQAoazOi9ucG3ZLFd79FulL9fYzUQ"/><span class="font-title-lg text-title-lg text-primary leading-tight">PUTUL AUTO</span></div><div class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mt-sm">Automotive POS</div></div><nav class="flex-1 px-md space-y-xs" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-sm"><div class="py-sm px-md text-label-md font-label-md text-outline uppercase">General</div><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined">dashboard</span><span class="font-label-lg text-label-lg">Dashboard</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="billing" href="#"><span class="material-symbols-outlined">receipt_long</span><span class="font-label-lg text-label-lg">Billing</span></a><div class="py-sm px-md text-label-md font-label-md text-outline uppercase mt-md">Management</div><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="inventory" href="#"><span class="material-symbols-outlined">inventory_2</span><span class="font-label-lg text-label-lg">Inventory</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="sales" href="#"><span class="material-symbols-outlined">point_of_sale</span><span class="font-label-lg text-label-lg">Sales</span></a><a aria-current="page" class="flex items-center gap-md px-md py-sm rounded-lg transition-all bg-secondary-container text-on-secondary-container font-semibold shadow-sm" data-path="procurement" href="#"><span class="material-symbols-outlined">shopping_cart_checkout</span><span class="font-label-lg text-label-lg">Procurement</span></a><div class="py-sm px-md text-label-md font-label-md text-outline uppercase mt-md">Operations</div><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="reports" href="#"><span class="material-symbols-outlined">bar_chart</span><span class="font-label-lg text-label-lg">Reports</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="system" href="#"><span class="material-symbols-outlined">settings_applications</span><span class="font-label-lg text-label-lg">System Control</span></a></nav></aside><div class="pl-72 w-full min-h-screen flex flex-col"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-xl"><div class="flex items-center gap-md"><span class="material-symbols-outlined text-outline">menu_open</span><div class="h-8 w-[1px] bg-outline-variant"></div><div class="text-on-surface font-title-lg text-title-lg">Operations Terminal</div></div><div class="flex items-center gap-lg"><div class="relative flex items-center bg-surface-container px-md py-xs rounded-full border border-outline-variant"><span class="material-symbols-outlined text-outline text-[20px] mr-sm">search</span><span class="text-body-md text-on-surface-variant">Search parts...</span></div><div class="flex items-center gap-md border-l border-outline-variant pl-lg"><div class="text-right hidden sm:block"><div class="text-label-lg font-label-lg text-on-surface">Store Manager</div><div class="text-label-md font-label-md text-on-surface-variant">PUTUL AUTO-01</div></div><div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-md"><span class="material-symbols-outlined text-on-primary text-[22px]">person</span></div></div></div></header><main class="relative pt-16 bg-background flex-1 p-xl"><div class="flex flex-col w-full">
+<!-- Header Section with Stats & Search -->
+<div class="grid grid-cols-12 gap-gutter mb-xl">
+<div class="col-span-12 lg:col-span-8">
+<div class="flex flex-col gap-xs">
+<span class="font-label-md text-label-md text-primary uppercase tracking-[0.2em]">Procurement Operations</span>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Purchase History &amp; Returns</h1>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4 flex items-end justify-end gap-md">
+<button class="flex items-center gap-sm bg-primary text-on-primary px-xl py-md rounded-xl shadow-md hover:shadow-xl transition-all active:scale-95" onclick="openReturnModal()">
+<span class="material-symbols-outlined">assignment_return</span>
+<span class="font-label-lg text-label-lg">Record New Return</span>
+</button>
+</div>
+</div>
+<!-- Monthly Summary Bento Grid -->
+<div class="grid grid-cols-12 gap-gutter mb-xl">
+<div class="col-span-12 md:col-span-4 bg-surface-container-lowest p-xl rounded-2xl shadow-sm relative overflow-hidden group">
+<div class="relative z-10">
+<div class="text-on-surface-variant font-label-lg text-label-lg mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                    Returns This Month
+                </div>
+<div class="text-headline-lg font-headline-lg text-on-surface counter-value" data-target="42">0</div>
+<div class="text-body-md font-body-md text-error flex items-center gap-xs mt-xs">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+                    +12% from last month
+                </div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[120px]">keyboard_return</span>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-surface-container-lowest p-xl rounded-2xl shadow-sm relative overflow-hidden group">
+<div class="relative z-10">
+<div class="text-on-surface-variant font-label-lg text-label-lg mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                    Supplier Credit Balance
+                </div>
+<div class="text-headline-lg font-headline-lg text-on-surface">₹84,250.00</div>
+<div class="text-body-md font-body-md text-on-surface-variant mt-xs">Across 14 active suppliers</div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[120px]">payments</span>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-surface-container-lowest p-xl rounded-2xl shadow-sm relative overflow-hidden group">
+<div class="relative z-10">
+<div class="text-on-surface-variant font-label-lg text-label-lg mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">inventory_2</span>
+                    Pending Inspections
+                </div>
+<div class="text-headline-lg font-headline-lg text-tertiary">08</div>
+<div class="text-body-md font-body-md text-on-surface-variant mt-xs">Awaiting quality verification</div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[120px]">pending_actions</span>
+</div>
+</div>
+</div>
+<!-- Main Content Area: Split View -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Purchase History Table -->
+<div class="col-span-12 xl:col-span-8 bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
+<div class="p-xl border-b border-surface-container flex items-center justify-between">
+<h2 class="font-title-lg text-title-lg text-on-surface">Recent Purchase Invoices</h2>
+<div class="flex items-center gap-md">
+<div class="bg-surface-container px-md py-xs rounded-full flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline text-[20px]">filter_list</span>
+<span class="text-label-md font-label-md text-on-surface-variant uppercase">Filter</span>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="px-xl py-md font-label-lg text-label-lg text-on-surface-variant">Invoice ID</th>
+<th class="px-xl py-md font-label-lg text-label-lg text-on-surface-variant">Supplier</th>
+<th class="px-xl py-md font-label-lg text-label-lg text-on-surface-variant">Date</th>
+<th class="px-xl py-md font-label-lg text-label-lg text-on-surface-variant text-right">Amount</th>
+<th class="px-xl py-md font-label-lg text-label-lg text-on-surface-variant">Status</th>
+<th class="px-xl py-md font-label-lg text-label-lg text-on-surface-variant">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="hover:bg-surface-container/30 transition-colors group">
+<td class="px-xl py-lg font-label-lg text-on-surface">PUR-2023-8901</td>
+<td class="px-xl py-lg">
+<div class="flex flex-col">
+<span class="font-label-lg text-on-surface">Metro Auto Components</span>
+<span class="text-label-md text-on-surface-variant">GSTIN: 24AAACM1234J1Z5</span>
+</div>
+</td>
+<td class="px-xl py-lg text-body-md text-on-surface-variant">24 Oct, 2023</td>
+<td class="px-xl py-lg text-right font-label-lg text-on-surface">₹45,200.00</td>
+<td class="px-xl py-lg">
+<span class="bg-secondary-container text-on-secondary-container px-sm py-1 rounded-full text-label-md font-label-md inline-flex items-center gap-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-current"></span> Paid
+                                </span>
+</td>
+<td class="px-xl py-lg">
+<button class="text-primary hover:underline font-label-lg text-label-lg" onclick="selectForReturn('PUR-2023-8901')">Record Return</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container/30 transition-colors group">
+<td class="px-xl py-lg font-label-lg text-on-surface">PUR-2023-8894</td>
+<td class="px-xl py-lg">
+<div class="flex flex-col">
+<span class="font-label-lg text-on-surface">Speedway Spares</span>
+<span class="text-label-md text-on-surface-variant">GSTIN: 27BBDEL4567K2Z2</span>
+</div>
+</td>
+<td class="px-xl py-lg text-body-md text-on-surface-variant">22 Oct, 2023</td>
+<td class="px-xl py-lg text-right font-label-lg text-on-surface">₹12,450.00</td>
+<td class="px-xl py-lg">
+<span class="bg-tertiary-container text-on-tertiary-container px-sm py-1 rounded-full text-label-md font-label-md inline-flex items-center gap-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-current"></span> Return Initiated
+                                </span>
+</td>
+<td class="px-xl py-lg">
+<button class="text-outline-variant cursor-not-allowed font-label-lg text-label-lg" disabled="">Processing</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container/30 transition-colors group">
+<td class="px-xl py-lg font-label-lg text-on-surface">PUR-2023-8882</td>
+<td class="px-xl py-lg">
+<div class="flex flex-col">
+<span class="font-label-lg text-on-surface">Global Tyres Ltd</span>
+<span class="text-label-md text-on-surface-variant">GSTIN: 09CCCFG7890L3Z9</span>
+</div>
+</td>
+<td class="px-xl py-lg text-body-md text-on-surface-variant">20 Oct, 2023</td>
+<td class="px-xl py-lg text-right font-label-lg text-on-surface">₹8,900.00</td>
+<td class="px-xl py-lg">
+<span class="bg-error-container text-on-error-container px-sm py-1 rounded-full text-label-md font-label-md inline-flex items-center gap-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-current"></span> Cancelled
+                                </span>
+</td>
+<td class="px-xl py-lg">
+<span class="material-symbols-outlined text-outline-variant">block</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Sidebar: Supplier Insight & Visual -->
+<div class="col-span-12 xl:col-span-4 flex flex-col gap-gutter">
+<div class="bg-primary text-on-primary rounded-2xl p-xl shadow-xl relative overflow-hidden">
+<div class="relative z-10">
+<h3 class="font-headline-sm text-headline-sm mb-md">Operational Efficiency</h3>
+<p class="text-body-md opacity-80 mb-lg">Your return rate has decreased by 4% since last month. High efficiency in procurement detected.</p>
+<div class="w-full bg-white/20 h-2 rounded-full overflow-hidden">
+<div class="bg-white h-full w-[92%] transition-all duration-1000"></div>
+</div>
+<div class="mt-sm text-label-md font-label-md">Inventory Health: 92% Excellent</div>
+</div>
+<div class="absolute right-0 top-0 w-32 h-full opacity-10 flex items-center justify-center">
+<span class="material-symbols-outlined text-[160px] translate-x-12">monitoring</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
+<div class="h-48 bg-cover bg-center" data-alt="Close-up high quality shot of a professional automotive workshop inventory shelf with neatly stacked part boxes, cinematic lighting, shallow depth of field, organized blue and white automotive aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDnChqs89rzPF7HBd9Y2OOywY04l9GWLQgwyWf1hkY4Jq9l8CZxd2SxSF2_NlUlHYGhUuyZNOXCpA8YW1poDyacemutDPhrnwXVSxg_ebXY1j2DGkyEXE2b-73yDR7xaoxozCOEmIRE9YLqitttO2ZeTPD29qz9xNFU6n6Q6giSw6Y8VZSUyvaIgyeeRRnevFQ5nBD7LcFy1uMf4dD9zs1HWmzSb4paiLqg_q_DkAR7hHXJwF8N_bhHPE_GYWSMLMSOV9rv99gPwvA')"></div>
+<div class="p-xl">
+<h4 class="font-title-lg text-title-lg text-on-surface mb-sm">Return Policy Reminder</h4>
+<p class="text-body-md text-on-surface-variant">All "Damaged on Arrival" returns must be recorded within 48 hours of invoice receipt to maintain automatic supplier credit eligibility.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Return Modal (Hidden by Default) -->
+<div class="fixed inset-0 z-[60] flex items-center justify-center p-xl pointer-events-none opacity-0 transition-opacity duration-300" id="returnModal">
+<div class="absolute inset-0 bg-on-background/40 backdrop-blur-sm"></div>
+<div class="relative w-full max-w-4xl bg-surface-container-lowest rounded-2xl shadow-2xl flex flex-col max-h-[921px] pointer-events-auto translate-y-8 transition-transform duration-300" id="modalContent">
+<div class="p-xl border-b border-surface-container flex items-center justify-between">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface" id="modalTitle">Record Purchase Return</h2>
+<p class="text-label-md text-on-surface-variant uppercase tracking-wider" id="modalSubTitle">Invoice #PUR-2023-8901</p>
+</div>
+<button class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-colors" onclick="closeReturnModal()">
+<span class="material-symbols-outlined text-on-surface">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-xl">
+<div class="grid grid-cols-12 gap-xl">
+<!-- Item Selection Area -->
+<div class="col-span-12">
+<table class="w-full text-left">
+<thead>
+<tr class="text-label-md text-on-surface-variant uppercase">
+<th class="pb-md">Product Details</th>
+<th class="pb-md text-center">Purchased Qty</th>
+<th class="pb-md text-center">Return Qty</th>
+<th class="pb-md">Reason</th>
+<th class="pb-md text-right">Credit Amount</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="py-lg">
+<td class="py-lg">
+<div class="flex flex-col">
+<span class="font-label-lg text-on-surface">Brake Pads - Ceramic Elite</span>
+<span class="text-label-md text-on-surface-variant">SKU: BP-CER-001</span>
+</div>
+</td>
+<td class="py-lg text-center font-body-md text-on-surface">20 Units</td>
+<td class="py-lg text-center">
+<input class="w-20 px-sm py-1 bg-surface-container border-b-2 border-primary rounded-t text-center font-label-lg focus:outline-none" max="20" min="0" type="number" value="0"/>
+</td>
+<td class="py-lg">
+<select class="bg-surface-container px-sm py-1 rounded text-body-md focus:outline-none w-full">
+<option>Damaged Item</option>
+<option>Wrong Specification</option>
+<option>Excess Stock Sent</option>
+</select>
+</td>
+<td class="py-lg text-right font-label-lg text-on-surface">₹0.00</td>
+</tr>
+<tr class="py-lg">
+<td class="py-lg">
+<div class="flex flex-col">
+<span class="font-label-lg text-on-surface">Engine Oil 5W-30 (1L)</span>
+<span class="text-label-md text-on-surface-variant">SKU: OIL-5W30-1L</span>
+</div>
+</td>
+<td class="py-lg text-center font-body-md text-on-surface">50 Units</td>
+<td class="py-lg text-center">
+<input class="w-20 px-sm py-1 bg-surface-container border-b-2 border-primary rounded-t text-center font-label-lg focus:outline-none" max="50" min="0" type="number" value="2"/>
+</td>
+<td class="py-lg">
+<select class="bg-surface-container px-sm py-1 rounded text-body-md focus:outline-none w-full">
+<option selected="">Damaged Item</option>
+<option>Wrong Specification</option>
+<option>Excess Stock Sent</option>
+</select>
+</td>
+<td class="py-lg text-right font-label-lg text-on-surface">₹1,750.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Summary Area -->
+<div class="col-span-12 lg:col-span-6">
+<label class="font-label-md text-on-surface-variant mb-xs block">Return Notes</label>
+<textarea class="w-full h-32 bg-surface-container p-md rounded-xl text-body-md focus:outline-none focus:ring-2 ring-primary/20" placeholder="Describe the damage or reason for return..."></textarea>
+</div>
+<div class="col-span-12 lg:col-span-6 bg-surface-container-low rounded-2xl p-xl flex flex-col gap-sm">
+<div class="flex justify-between items-center text-body-md">
+<span class="text-on-surface-variant">Subtotal Return:</span>
+<span class="font-label-lg text-on-surface">₹1,750.00</span>
+</div>
+<div class="flex justify-between items-center text-body-md">
+<span class="text-on-surface-variant">Tax Adjustment (18%):</span>
+<span class="font-label-lg text-on-surface">₹315.00</span>
+</div>
+<div class="h-[1px] bg-outline-variant my-sm"></div>
+<div class="flex justify-between items-center">
+<span class="font-title-lg text-title-lg text-on-surface">Total Credit Note:</span>
+<span class="font-headline-sm text-headline-sm text-primary">₹2,065.00</span>
+</div>
+<p class="text-[10px] text-on-surface-variant uppercase text-right tracking-widest mt-xs">Will be added to Metro Auto Components balance</p>
+</div>
+</div>
+</div>
+<div class="p-xl border-t border-surface-container flex justify-end gap-md">
+<button class="px-xl py-md text-on-surface hover:bg-surface-container rounded-xl font-label-lg" onclick="closeReturnModal()">Cancel</button>
+<button class="px-xl py-md bg-primary text-on-primary rounded-xl font-label-lg shadow-md hover:shadow-xl active:scale-95 transition-all" onclick="finalizeReturn()">Complete Return &amp; Update Ledger</button>
+</div>
+</div>
+</div>
+<!-- Quick Action Bar (Mobile/POS focus) -->
+<div class="fixed bottom-0 left-72 right-0 bg-surface-container-highest/95 backdrop-blur px-xl py-sm flex items-center justify-between z-30 border-t border-outline-variant">
+<div class="flex items-center gap-xl text-label-md font-label-md text-on-surface-variant uppercase">
+<div class="flex items-center gap-xs"><span class="bg-surface p-1 rounded shadow-sm text-primary">F1</span> Search</div>
+<div class="flex items-center gap-xs"><span class="bg-surface p-1 rounded shadow-sm text-primary">F8</span> Returns List</div>
+<div class="flex items-center gap-xs"><span class="bg-surface p-1 rounded shadow-sm text-primary">F12</span> Print Credit Note</div>
+</div>
+<div class="text-label-md font-label-md text-primary font-semibold">TERMINAL ACTIVE: UNIT_01_SOUTH</div>
+</div>
+<script>
+        function openReturnModal() {
+            const modal = document.getElementById('returnModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            content.classList.remove('translate-y-8');
+        }
+
+        function closeReturnModal() {
+            const modal = document.getElementById('returnModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.add('translate-y-8');
+        }
+
+        function selectForReturn(id) {
+            document.getElementById('modalSubTitle').innerText = 'Invoice #' + id;
+            openReturnModal();
+        }
+
+        function finalizeReturn() {
+            // Mock feedback
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                alert("Return processed successfully. Ledger updated.");
+                btn.innerText = originalText;
+                btn.disabled = false;
+                closeReturnModal();
+            }, 1000);
+        }
+
+        // Animated counter
+        const counters = document.querySelectorAll('.counter-value');
+        counters.forEach(counter => {
+            const target = +counter.getAttribute('data-target');
+            let count = 0;
+            const updateCounter = () => {
+                const increment = target / 50;
+                if (count < target) {
+                    count += increment;
+                    counter.innerText = Math.ceil(count);
+                    setTimeout(updateCounter, 20);
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            updateCounter();
+        });
+    </script>
+</div></main></div></body></html>

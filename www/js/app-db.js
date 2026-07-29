@@ -578,6 +578,24 @@ var AppDB = (function () {
       var hash = 0;
       for (var i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
       return colors[Math.abs(hash) % colors.length];
+    },
+
+    initBackButton: function () {
+      if (typeof window.Capacitor !== 'undefined' && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+        window.Capacitor.Plugins.App.addListener('backButton', function (info) {
+          if (info.canGoBack) {
+            window.history.back();
+          } else {
+            window.Capacitor.Plugins.App.exitApp();
+          }
+        });
+      }
     }
   };
 })();
+
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof AppDB !== 'undefined' && AppDB.initBackButton) {
+    AppDB.initBackButton();
+  }
+});

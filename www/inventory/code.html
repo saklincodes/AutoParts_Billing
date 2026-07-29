@@ -4,7 +4,7 @@
       min-height: max(884px, 100dvh);
     }
   </style>
-  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-margin-mobile flex items-center justify-between gap-md"><div class="flex items-center gap-sm"><img alt="AutoParts Billing Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB-vfM_j8m0mnYqv-qrArJJYEZNCL75-aiphhaJQcoQVPoC3A76ANpHOPkyRLHYpekHZBe_YIcReDkTz21Qo27OWejspTfOy-OHBzifZoE8ZurJBpVWdgdm88C8pQB1JL3p7D-fCJFUAWcjR1Quvl2pK-MLA5cS1I4SVY9z1idflECdBvq_0vFDdkKAgQNDvUlSWumftxN0UTTSsPHXrPahAHCvSDX_Y343vXIR0Z-uCQUP_psnDU0JiHQBDnvyGhUjAAiv51tzQE"/><span class="font-title-lg text-title-lg text-primary truncate max-w-[180px]">Inventory</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex-1 relative w-full pt-16 pb-24 bg-surface px-margin-mobile"><div class="flex flex-col w-full gap-md">
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between gap-md"><div class="flex items-center gap-sm"><img alt="AutoParts Billing Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB-vfM_j8m0mnYqv-qrArJJYEZNCL75-aiphhaJQcoQVPoC3A76ANpHOPkyRLHYpekHZBe_YIcReDkTz21Qo27OWejspTfOy-OHBzifZoE8ZurJBpVWdgdm88C8pQB1JL3p7D-fCJFUAWcjR1Quvl2pK-MLA5cS1I4SVY9z1idflECdBvq_0vFDdkKAgQNDvUlSWumftxN0UTTSsPHXrPahAHCvSDX_Y343vXIR0Z-uCQUP_psnDU0JiHQBDnvyGhUjAAiv51tzQE"/><span class="font-title-lg text-title-lg text-primary truncate max-w-[180px]">Inventory</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex-1 relative w-full pt-16 pt-safe pb-24 bg-surface px-margin-mobile"><div class="flex flex-col w-full gap-md">
 <!-- Search and Filter Header -->
 <div class="flex flex-col gap-sm sticky top-0 z-10 bg-surface/95 backdrop-blur-sm pb-sm">
 <div class="relative group">
@@ -146,37 +146,34 @@
 </div>
 <!-- Floating Action Button -->
 <div class="fixed bottom-20 right-6 flex flex-col gap-3 z-40" id="fab-group">
-<a class="w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all" href="http://192.168.1.103:8000/api/pages/add-product/">
+<a class="w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all" href="../add_edit_product/code.html">
 <span class="material-symbols-outlined text-[28px]">add</span>
 </a>
-<a class="w-14 h-14 bg-secondary-container text-on-secondary-container rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all" href="http://192.168.1.103:8000/api/pages/stock-adjustment/">
+<a class="w-14 h-14 bg-secondary-container text-on-secondary-container rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all" href="../stock_adjustment/code.html">
 <span class="material-symbols-outlined text-[28px]">swap_vert</span>
 </a>
 </div>
   <script>
-    const API_BASE = 'http://192.168.1.103:8000/api';
     let allProducts = [];
     let currentFilter = '';
 
-    async function loadProducts(filter = '') {
+    async function loadProducts(filter) {
+      filter = filter || '';
       try {
-        let url = API_BASE + '/products/';
-        if (filter) url += '?category=' + encodeURIComponent(filter);
-        const res = await fetch(url);
-        allProducts = await res.json();
+        allProducts = await AppDB.searchProducts();
+        if (filter) allProducts = allProducts.filter(function(p) { return p.category === filter.toLowerCase(); });
         renderProducts(allProducts);
         updateStats();
-      } catch (e) {
-        console.warn('API not reachable');
-      }
+      } catch (e) { console.warn('AppDB error', e); }
     }
 
     async function updateStats() {
       try {
-        const res = await fetch(API_BASE + '/dashboard/stats/');
-        const data = await res.json();
-        document.querySelectorAll('.bg-surface-container .font-headline-sm')[0].textContent = data.total_products;
-        document.querySelectorAll('.bg-tertiary-fixed .font-headline-sm')[0].textContent = data.low_stock_count + ' Items';
+        var products = await AppDB.getProducts();
+        var total = products.length;
+        var lowStock = products.filter(function(p) { return p.stock_qty <= p.low_stock_qty; }).length;
+        document.querySelectorAll('.bg-surface-container .font-headline-sm')[0].textContent = total;
+        document.querySelectorAll('.bg-tertiary-fixed .font-headline-sm')[0].textContent = lowStock + ' Items';
       } catch (e) {}
     }
 
@@ -202,7 +199,7 @@
                     <p class="text-on-surface-variant font-body-md text-body-md line-clamp-1">${p.brand || ''} - SKU: ${p.sku}</p>
                   </div>
                   <div class="flex gap-1">
-                    <button class="p-1.5 text-on-surface-variant hover:bg-surface-container rounded-lg">
+                    <button class="p-1.5 text-on-surface-variant hover:bg-surface-container rounded-lg" onclick="event.stopPropagation();window.location.href='../add_edit_product/code.html?id='+${p.id}">
                       <span class="material-symbols-outlined text-[20px]">edit</span>
                     </button>
                   </div>
@@ -212,7 +209,7 @@
                     <span class="text-primary font-headline-sm text-headline-sm">₹${Number(p.price).toLocaleString()}</span>
                     <span class="text-on-surface-variant font-label-md text-label-md">Qty: <span class="${isLow ? 'text-tertiary font-bold' : 'font-bold'}">${p.stock_qty} units</span></span>
                   </div>
-                  <button class="p-1.5 text-error">
+                  <button class="p-1.5 text-error" onclick="event.stopPropagation();deleteProduct(${p.id},'${p.name.replace(/'/g, "\\'")}')">
                     <span class="material-symbols-outlined text-[20px]">delete</span>
                   </button>
                 </div>
@@ -243,6 +240,14 @@
       tempDiv.childNodes.forEach(node => {
         if (node.nodeType === 1) container.insertBefore(node, emptyEl);
       });
+    }
+
+    function deleteProduct(id, name) {
+      if (confirm('Delete "' + name + '"? This cannot be undone.')) {
+        AppDB.deleteProduct(id).then(function() {
+          loadProducts();
+        }).catch(function(e) { alert('Delete failed: ' + e.message); });
+      }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -290,4 +295,4 @@
       ], { duration: 1000, iterations: 2, easing: 'ease-in-out' });
     });
   </script>
-</div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-between items-center h-16 px-2 max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="dashboard" href="http://192.168.1.103:8000/api/pages/dashboard/"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="billing" href="http://192.168.1.103:8000/api/pages/billing/"><span class="material-symbols-outlined">receipt_long</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Billing</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-1/5 transition-colors text-primary font-bold" data-path="inventory" href="http://192.168.1.103:8000/api/pages/inventory/"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Stock</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" href="http://192.168.1.103:8000/api/pages/reports/"><span class="material-symbols-outlined">bar_chart</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Reports</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" href="http://192.168.1.103:8000/api/pages/settings/"><span class="material-symbols-outlined">settings</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Settings</span></a></div></nav></body></html>
+</div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-between items-center h-16 px-2 max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="dashboard" href="../dashboard/code.html"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="billing" href="../new_billing_1/code.html"><span class="material-symbols-outlined">receipt_long</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Billing</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-1/5 transition-colors text-primary font-bold" data-path="inventory" href="#"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Stock</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" href="../reports/code.html"><span class="material-symbols-outlined">bar_chart</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Reports</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" href="../settings/code.html"><span class="material-symbols-outlined">settings</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Settings</span></a></div></nav></body></html>

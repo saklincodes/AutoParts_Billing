@@ -4,8 +4,7 @@
       min-height: max(884px, 100dvh);
     }
   </style>
-  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-4 flex items-center gap-sm"><button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors" onclick="history.back()"><span class="material-symbols-outlined">arrow_back</span></button><div class="flex-1 flex items-center gap-sm overflow-hidden"><img alt="Logo" class="h-6 w-auto shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB-vfM_j8m0mnYqv-qrArJJYEZNCL75-aiphhaJQcoQVPoC3A76ANpHOPkyRLHYpekHZBe_YIcReDkTz21Qo27OWejspTfOy-OHBzifZoE8ZurJBpVWdgdm88C8pQB1JL3p7D-fCJFUAWcjR1Quvl2pK-MLA5cS1I4SVY9z1idflECdBvq_0vFDdkKAgQNDvUlSWumftxN0UTTSsPHXrPahAHCvSDX_Y343vXIR0Z-uCQUP_psnDU0JiHQBDnvyGhUjAAiv51tzQE"/><h1 class="font-title-lg text-title-lg text-on-surface truncate">Invoice Preview</h1></div></div></header><main class="flex-1 relative w-full pt-16 bg-surface px-margin-mobile pb-safe"><div class="flex flex-col w-full pb-xl">
-{{ invoice_id|json_script:"invoiceId" }}
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-4 flex items-center gap-sm"><button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors" onclick="history.back()"><span class="material-symbols-outlined">arrow_back</span></button><div class="flex-1 flex items-center gap-sm overflow-hidden"><img alt="Logo" class="h-6 w-auto shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB-vfM_j8m0mnYqv-qrArJJYEZNCL75-aiphhaJQcoQVPoC3A76ANpHOPkyRLHYpekHZBe_YIcReDkTz21Qo27OWejspTfOy-OHBzifZoE8ZurJBpVWdgdm88C8pQB1JL3p7D-fCJFUAWcjR1Quvl2pK-MLA5cS1I4SVY9z1idflECdBvq_0vFDdkKAgQNDvUlSWumftxN0UTTSsPHXrPahAHCvSDX_Y343vXIR0Z-uCQUP_psnDU0JiHQBDnvyGhUjAAiv51tzQE"/><h1 class="font-title-lg text-title-lg text-on-surface truncate">Invoice Preview</h1></div></div></header><main class="flex-1 relative w-full pt-16 pt-safe bg-surface px-margin-mobile pb-safe"><div class="flex flex-col w-full pb-xl">
 <!-- Invoice Preview Container -->
 <div class="bg-surface-container-lowest shadow-xl rounded-xl overflow-hidden mx-auto w-full max-w-2xl relative">
 <!-- Action Toolbar (Sticky top of the preview) -->
@@ -104,44 +103,35 @@ This is a computer generated invoice. No signature required.
 </div>
 </div>
 <script>
-var invoiceId = JSON.parse(document.getElementById('invoiceId').textContent);
+var invoiceId = new URLSearchParams(window.location.search).get('id');
 if (!invoiceId) { document.getElementById('loadingIndicator').querySelector('p').textContent = 'No invoice selected.'; }
 else {
-  fetch('/api/invoice-detail/' + invoiceId + '/')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      document.getElementById('loadingIndicator').style.display = 'none';
-      document.getElementById('invoiceNo').textContent = data.invoice_no;
-      var d = new Date(data.date);
-      document.getElementById('invoiceDate').textContent = d.toLocaleDateString('en-IN', {year:'numeric',month:'short',day:'numeric'}) + ' \u2022 ' + d.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
-      if (data.customer) {
-        document.getElementById('customerName').textContent = data.customer.name;
-        document.getElementById('customerVehicle').textContent = data.customer.vehicle_no || '-';
-      } else {
-        document.getElementById('customerName').textContent = 'Walk-in Customer';
-      }
-      var itemsHtml = '';
-      data.items.forEach(function(item, idx) {
-        var bg = idx % 2 === 0 ? '' : ' bg-surface-container-low/30';
-        itemsHtml += '<div class="grid grid-cols-12 py-md px-md items-start' + bg + '"><div class="col-span-6 flex flex-col"><span class="font-label-lg text-on-surface">' + (item.product_name || 'Unknown') + '</span><span class="text-label-md text-on-surface-variant">' + (item.product_sku || '') + '</span></div><div class="col-span-2 text-center font-body-md text-on-surface">' + item.quantity + '</div><div class="col-span-4 text-right font-label-lg text-on-surface">\u20b9' + parseFloat(item.subtotal).toFixed(2) + '</div></div>';
-      });
-      document.getElementById('invoiceItems').innerHTML = itemsHtml;
-      document.getElementById('subtotal').textContent = '\u20b9' + parseFloat(data.subtotal).toFixed(2);
-      document.getElementById('discount').textContent = '\u20b9' + parseFloat(data.discount).toFixed(2);
-      document.getElementById('tax').textContent = '\u20b9' + parseFloat(data.tax).toFixed(2);
-      document.getElementById('total').textContent = '\u20b9' + parseFloat(data.total_amount).toFixed(2);
-    })
-    .catch(function() {
-      document.getElementById('loadingIndicator').querySelector('p').textContent = 'Failed to load invoice.';
+  AppDB.getInvoiceDetail(invoiceId).then(function(data) {
+    if (!data) { document.getElementById('loadingIndicator').querySelector('p').textContent = 'Invoice not found.'; return; }
+    document.getElementById('loadingIndicator').style.display = 'none';
+    document.getElementById('invoiceNo').textContent = data.invoice_no;
+    var d = new Date(data.created_at);
+    document.getElementById('invoiceDate').textContent = d.toLocaleDateString('en-IN', {year:'numeric',month:'short',day:'numeric'}) + ' \u2022 ' + d.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('customerName').textContent = data.customer_name || 'Walk-in Customer';
+    document.getElementById('customerVehicle').textContent = '';
+    var itemsHtml = '';
+    (data.items || []).forEach(function(item, idx) {
+      var bg = idx % 2 === 0 ? '' : ' bg-surface-container-low/30';
+      itemsHtml += '<div class="grid grid-cols-12 py-md px-md items-start' + bg + '"><div class="col-span-6 flex flex-col"><span class="font-label-lg text-on-surface">' + (item.product_name || 'Unknown') + '</span><span class="text-label-md text-on-surface-variant">' + (item.product_sku || '') + '</span></div><div class="col-span-2 text-center font-body-md text-on-surface">' + item.quantity + '</div><div class="col-span-4 text-right font-label-lg text-on-surface">\u20b9' + parseFloat(item.subtotal).toFixed(2) + '</div></div>';
     });
-  fetch('/api/settings/')
-    .then(function(r) { return r.json(); })
-    .then(function(s) {
-      if (s.shop_name) document.getElementById('shopName').textContent = s.shop_name;
-      if (s.address) document.getElementById('shopAddress').textContent = s.address;
-      if (s.phone) document.getElementById('shopPhone').textContent = s.phone;
-      if (s.email) document.getElementById('shopEmail').textContent = s.email;
-    }).catch(function(){});
+    document.getElementById('invoiceItems').innerHTML = itemsHtml;
+    document.getElementById('subtotal').textContent = '\u20b9' + parseFloat(data.subtotal).toFixed(2);
+    document.getElementById('discount').textContent = '\u20b9' + parseFloat(data.discount).toFixed(2);
+    document.getElementById('tax').textContent = '\u20b9' + parseFloat(data.tax).toFixed(2);
+    document.getElementById('total').textContent = '\u20b9' + parseFloat(data.total_amount).toFixed(2);
+    var settings = AppDB.getShopSettings();
+    if (settings.shop_name) document.getElementById('shopName').textContent = settings.shop_name;
+    if (settings.address) document.getElementById('shopAddress').textContent = settings.address;
+    if (settings.phone) document.getElementById('shopPhone').textContent = settings.phone;
+    if (settings.email) document.getElementById('shopEmail').textContent = settings.email;
+  }).catch(function() {
+    document.getElementById('loadingIndicator').querySelector('p').textContent = 'Failed to load invoice.';
+  });
 }
 document.getElementById('shareBtn').addEventListener('click', function() {
   if (navigator.share) {

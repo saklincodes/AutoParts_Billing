@@ -4,7 +4,7 @@
       min-height: max(884px, 100dvh);
     }
   </style>
-  </head><body class="bg-background font-body-md text-on-background"><header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-sm"><img alt="Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLve6l7TU3xTJGhYGch2-do4gWM6lFpdoOJPzfILzmByD5pETPyBM-ue4sFovGFi1tW0gWwa2Tnjor4qNeMAeKr6ICpa_hi1m2bwj4GWyN2yvnHFZVgs54GVtneILdovc0Q_gJ5xRtb75NP4r18L5Qcjy5oUqgtV95Dp5L5HowhaHs3IBw3KSP6swCX_DFUgcFeeLQzZQc7JI8f0j2BX9a6QLJJUcHoRRlXRGL0wYBicv1kyCvBRmrvJHQ"/><span class="font-title-lg text-title-lg text-primary">Billing</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative w-full pt-16 pb-24 bg-background min-h-screen"><div class="flex flex-col w-full">
+  </head><body class="bg-background font-body-md text-on-background"><header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-sm"><img alt="Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLve6l7TU3xTJGhYGch2-do4gWM6lFpdoOJPzfILzmByD5pETPyBM-ue4sFovGFi1tW0gWwa2Tnjor4qNeMAeKr6ICpa_hi1m2bwj4GWyN2yvnHFZVgs54GVtneILdovc0Q_gJ5xRtb75NP4r18L5Qcjy5oUqgtV95Dp5L5HowhaHs3IBw3KSP6swCX_DFUgcFeeLQzZQc7JI8f0j2BX9a6QLJJUcHoRRlXRGL0wYBicv1kyCvBRmrvJHQ"/><span class="font-title-lg text-title-lg text-primary">Billing</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative w-full pt-16 pt-safe pb-24 bg-background min-h-screen"><div class="flex flex-col w-full">
 <!-- Quick Actions Header -->
 <div class="px-margin-mobile py-md flex items-center justify-between">
 <div class="flex flex-col">
@@ -139,17 +139,15 @@
 <!-- Floating Feedback Toast Area (for the scripts) -->
 <div class="fixed bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none z-[60]" id="toast-container"></div>
     <script>
-        const API_BASE = 'http://192.168.1.103:8000/api';
         const searchInput = document.getElementById('quickSearch');
         const recentPartsContainer = document.querySelector('.flex.flex-col.gap-sm');
         let allProducts = [];
 
         async function loadProducts() {
             try {
-                const res = await fetch(API_BASE + '/products/search_min/');
-                allProducts = await res.json();
+                allProducts = await AppDB.searchProductsMin();
                 renderRecentParts();
-            } catch (e) { console.warn('API not reachable'); }
+            } catch (e) { console.warn('AppDB error', e); }
         }
 
         function renderRecentParts() {
@@ -187,19 +185,15 @@
 
         async function createQuickInvoice() {
             if (quickCart.length === 0) { showToast('Cart is empty!'); return; }
-            var items = quickCart.map(function(i) { return {product_id: i.pid, quantity: i.qty, unit_price: i.price}; });
+            var items = quickCart.map(function(i) { return { product_id: i.pid, quantity: i.qty, unit_price: i.price }; });
             try {
-                var res = await fetch(API_BASE + '/invoices/', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({items: items, discount: 0, tax: 0})
-                });
-                var data = await res.json();
-                if (res.ok) {
-                    showToast('Invoice ' + data.invoice_no + ' created!');
+                var result = await AppDB.createInvoice({ items: items, discount: 0, tax: 0 });
+                if (result) {
+                    showToast('Invoice ' + result.invoice_no + ' created!');
                     quickCart = [];
-                    setTimeout(function() { window.location.href = '/api/pages/invoice-preview/' + data.id + '/'; }, 1000);
+                    setTimeout(function() { window.location.href = '../invoice_preview_1/code.html?id=' + result.id; }, 1000);
                 } else { showToast('Error creating invoice'); }
-            } catch (e) { showToast('Server not reachable'); }
+            } catch (e) { showToast('Error: ' + e.message); }
         }
 
         var scrollContainer = document.querySelector('.overflow-x-auto');
@@ -216,4 +210,4 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
-</style></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/80 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]"><div class="flex justify-around items-center h-16"><a class="flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" href="http://192.168.1.103:8000/api/pages/dashboard/"><span class="material-symbols-outlined">dashboard</span><span class="font-label-md text-label-md">Home</span></a><a class="flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" href="http://192.168.1.103:8000/api/pages/customers/"><span class="material-symbols-outlined">group</span><span class="font-label-md text-label-md">Customers</span></a><a class="flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" href="http://192.168.1.103:8000/api/pages/inventory/"><span class="material-symbols-outlined">inventory_2</span><span class="font-label-md text-label-md">Stock</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-xs transition-colors text-primary font-bold" href="http://192.168.1.103:8000/api/pages/billing/"><span class="material-symbols-outlined">receipt_long</span><span class="font-label-md text-label-md">Billing</span></a></div></nav></body></html>
+</style></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/80 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]"><div class="flex justify-around items-center h-16"><a class="flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" href="../dashboard/code.html"><span class="material-symbols-outlined">dashboard</span><span class="font-label-md text-label-md">Home</span></a><a class="flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" href="../customers/code.html"><span class="material-symbols-outlined">group</span><span class="font-label-md text-label-md">Customers</span></a><a class="flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" href="../inventory/code.html"><span class="material-symbols-outlined">inventory_2</span><span class="font-label-md text-label-md">Stock</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-xs transition-colors text-primary font-bold" href="#"><span class="material-symbols-outlined">receipt_long</span><span class="font-label-md text-label-md">Billing</span></a></div></nav></body></html>

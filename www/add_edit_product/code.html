@@ -4,7 +4,7 @@
       min-height: max(884px, 100dvh);
     }
   </style>
-  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-4 flex items-center gap-sm"><button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors" onclick="history.back()"><span class="material-symbols-outlined">arrow_back</span></button><div class="flex-1 flex items-center gap-sm overflow-hidden"><img alt="Logo" class="h-6 w-auto shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB-vfM_j8m0mnYqv-qrArJJYEZNCL75-aiphhaJQcoQVPoC3A76ANpHOPkyRLHYpekHZBe_YIcReDkTz21Qo27OWejspTfOy-OHBzifZoE8ZurJBpVWdgdm88C8pQB1JL3p7D-fCJFUAWcjR1Quvl2pK-MLA5cS1I4SVY9z1idflECdBvq_0vFDdkKAgQNDvUlSWumftxN0UTTSsPHXrPahAHCvSDX_Y343vXIR0Z-uCQUP_psnDU0JiHQBDnvyGhUjAAiv51tzQE"/><h1 class="font-title-lg text-title-lg text-on-surface truncate">Add Product</h1></div></div></header><main class="flex-1 relative w-full pt-16 bg-surface px-margin-mobile pb-safe"><div class="flex flex-col w-full pb-10">
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-4 flex items-center gap-sm"><button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors" onclick="history.back()"><span class="material-symbols-outlined">arrow_back</span></button><div class="flex-1 flex items-center gap-sm overflow-hidden"><img alt="Logo" class="h-6 w-auto shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB-vfM_j8m0mnYqv-qrArJJYEZNCL75-aiphhaJQcoQVPoC3A76ANpHOPkyRLHYpekHZBe_YIcReDkTz21Qo27OWejspTfOy-OHBzifZoE8ZurJBpVWdgdm88C8pQB1JL3p7D-fCJFUAWcjR1Quvl2pK-MLA5cS1I4SVY9z1idflECdBvq_0vFDdkKAgQNDvUlSWumftxN0UTTSsPHXrPahAHCvSDX_Y343vXIR0Z-uCQUP_psnDU0JiHQBDnvyGhUjAAiv51tzQE"/><h1 class="font-title-lg text-title-lg text-on-surface truncate" id="pageTitle">Add Product</h1></div></div></header><main class="flex-1 relative w-full pt-16 pt-safe bg-surface px-margin-mobile pb-safe"><div class="flex flex-col w-full pb-10">
 <!-- Status & Header Decorative Element -->
 <div class="relative w-full overflow-hidden rounded-xl bg-primary-container p-6 mb-6">
 <div class="relative z-10 flex items-center gap-4">
@@ -127,40 +127,54 @@
 </form>
 </div>
 <script>
-  // Image Upload Logic & Compression Simulation
-  const zone = document.getElementById('imageUploadZone');
-  const fileInput = document.getElementById('fileInput');
-  const overlay = document.getElementById('compressingOverlay');
-  const placeholder = document.getElementById('uploadPlaceholder');
-  const previewContainer = document.getElementById('imagePreviewContainer');
-  const stockInput = document.getElementById('pStock');
-  const thresholdInput = document.getElementById('pThreshold');
-  const stockWarning = document.getElementById('stockWarning');
+  var editId = null;
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('id')) { editId = params.get('id'); }
 
-  zone.addEventListener('click', () => fileInput.click());
+  var zone = document.getElementById('imageUploadZone');
+  var fileInput = document.getElementById('fileInput');
+  var overlay = document.getElementById('compressingOverlay');
+  var placeholder = document.getElementById('uploadPlaceholder');
+  var previewContainer = document.getElementById('imagePreviewContainer');
+  var stockInput = document.getElementById('pStock');
+  var thresholdInput = document.getElementById('pThreshold');
+  var stockWarning = document.getElementById('stockWarning');
 
-  fileInput.addEventListener('change', (e) => {
+  if (editId) {
+    document.getElementById('pageTitle').textContent = 'Edit Product';
+    document.querySelector('.font-headline-sm').textContent = 'Edit Product Details';
+    document.getElementById('saveBtn').innerHTML = '<span class="material-symbols-outlined">save</span> Update Product';
+    AppDB.getProduct(editId).then(function(p) {
+      if (!p) return;
+      document.getElementById('pName').value = p.name || '';
+      document.getElementById('pSKU').value = p.sku || '';
+      document.getElementById('pCategory').value = p.category || '';
+      document.getElementById('pPrice').value = p.price || '';
+      document.getElementById('pStock').value = p.stock_qty || '';
+      document.getElementById('pThreshold').value = p.low_stock_qty || '';
+      document.getElementById('pDesc').value = p.description || '';
+      checkStock();
+    });
+  }
+
+  zone.addEventListener('click', function() { fileInput.click(); });
+
+  fileInput.addEventListener('change', function(e) {
     if (e.target.files && e.target.files[0]) {
       overlay.classList.remove('hidden');
       overlay.classList.add('flex');
-      
-      // Simulate compression time
-      setTimeout(() => {
+      setTimeout(function() {
         overlay.classList.add('hidden');
         overlay.classList.remove('flex');
         placeholder.classList.add('hidden');
         previewContainer.classList.remove('hidden');
-        
-        // In a real app we'd set the src to the local blob URL
-        // document.getElementById('imagePreview').src = URL.createObjectURL(e.target.files[0]);
       }, 1500);
     }
   });
 
-  // Simple Validation Visual Feedback
-  const checkStock = () => {
-    const stock = parseInt(stockInput.value) || 0;
-    const threshold = parseInt(thresholdInput.value) || 0;
+  function checkStock() {
+    var stock = parseInt(stockInput.value) || 0;
+    var threshold = parseInt(thresholdInput.value) || 0;
     if (stock <= threshold && stockInput.value !== '') {
       stockWarning.classList.remove('hidden');
       stockWarning.classList.add('flex');
@@ -169,24 +183,33 @@
       stockWarning.classList.add('hidden');
       stockInput.classList.replace('border-error', 'border-outline-variant');
     }
-  };
+  }
 
   stockInput.addEventListener('input', checkStock);
   thresholdInput.addEventListener('input', checkStock);
 
-  // Form Submission
-  document.getElementById('productForm').addEventListener('submit', (e) => {
+  document.getElementById('productForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    const btn = document.getElementById('saveBtn');
+    var btn = document.getElementById('saveBtn');
     btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Saving...';
     btn.classList.add('opacity-80', 'pointer-events-none');
-    
-    setTimeout(() => {
+    var product = {
+      name: document.getElementById('pName').value,
+      sku: document.getElementById('pSKU').value,
+      category: document.getElementById('pCategory').value,
+      price: parseFloat(document.getElementById('pPrice').value) || 0,
+      stock_qty: parseInt(document.getElementById('pStock').value) || 0,
+      low_stock_qty: parseInt(document.getElementById('pThreshold').value) || 5,
+      description: document.getElementById('pDesc').value
+    };
+    if (editId) product.id = Number(editId);
+    AppDB.saveProduct(product).then(function() {
       btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Success';
       btn.classList.replace('bg-primary', 'bg-emerald-600');
-      setTimeout(() => {
-        history.back();
-      }, 800);
-    }, 1200);
+      setTimeout(function() { history.back(); }, 800);
+    }).catch(function() {
+      btn.innerHTML = '<span class="material-symbols-outlined">error</span> Error';
+      btn.classList.remove('opacity-80', 'pointer-events-none');
+    });
   });
 </script></main></body></html>

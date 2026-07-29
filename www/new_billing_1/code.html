@@ -4,7 +4,7 @@
       min-height: max(884px, 100dvh);
     }
   </style>
-  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-margin-mobile flex items-center justify-between gap-md"><div class="flex items-center gap-sm"><img alt="AutoParts Billing Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB-vfM_j8m0mnYqv-qrArJJYEZNCL75-aiphhaJQcoQVPoC3A76ANpHOPkyRLHYpekHZBe_YIcReDkTz21Qo27OWejspTfOy-OHBzifZoE8ZurJBpVWdgdm88C8pQB1JL3p7D-fCJFUAWcjR1Quvl2pK-MLA5cS1I4SVY9z1idflECdBvq_0vFDdkKAgQNDvUlSWumftxN0UTTSsPHXrPahAHCvSDX_Y343vXIR0Z-uCQUP_psnDU0JiHQBDnvyGhUjAAiv51tzQE"/><span class="font-title-lg text-title-lg text-primary truncate max-w-[180px]">Billing</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex-1 relative w-full pt-16 pb-24 bg-surface px-margin-mobile"><div class="flex flex-col w-full gap-lg">
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between gap-md"><div class="flex items-center gap-sm"><img alt="AutoParts Billing Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB-vfM_j8m0mnYqv-qrArJJYEZNCL75-aiphhaJQcoQVPoC3A76ANpHOPkyRLHYpekHZBe_YIcReDkTz21Qo27OWejspTfOy-OHBzifZoE8ZurJBpVWdgdm88C8pQB1JL3p7D-fCJFUAWcjR1Quvl2pK-MLA5cS1I4SVY9z1idflECdBvq_0vFDdkKAgQNDvUlSWumftxN0UTTSsPHXrPahAHCvSDX_Y343vXIR0Z-uCQUP_psnDU0JiHQBDnvyGhUjAAiv51tzQE"/><span class="font-title-lg text-title-lg text-primary truncate max-w-[180px]">Billing</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex-1 relative w-full pt-16 pt-safe pb-24 bg-surface px-margin-mobile"><div class="flex flex-col w-full gap-lg">
 <!-- Interactive Header Card: Customer & Quick Stats -->
 <div class="bg-surface-container-low rounded-xl p-md flex flex-col gap-sm shadow-sm relative overflow-hidden">
 <div class="absolute top-0 right-0 p-sm opacity-10">
@@ -97,7 +97,6 @@
 <!-- Spacer for bottom floating card -->
 <div class="h-40"></div>
   <script>
-    const API_BASE = 'http://192.168.1.103:8000/api';
     const searchInput = document.getElementById('product-search');
     const suggestions = document.getElementById('search-suggestions');
     const cartContainer = document.getElementById('cart-items');
@@ -112,11 +111,8 @@
 
     async function loadProducts() {
       try {
-        const res = await fetch(API_BASE + '/products/search_min/');
-        allProducts = await res.json();
-      } catch (e) {
-        console.warn('API not reachable');
-      }
+        allProducts = await AppDB.searchProductsMin();
+      } catch (e) { console.warn('AppDB error', e); }
     }
     loadProducts();
 
@@ -232,22 +228,17 @@
 
     async function submitInvoice() {
       if (cart.length === 0) return;
-      const items = cart.map(i => ({ product_id: i.pid, quantity: i.qty, unit_price: i.price }));
+      var items = cart.map(function(i) { return { product_id: i.pid, quantity: i.qty, unit_price: i.price }; });
       try {
-        const res = await fetch(API_BASE + '/invoices/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items, discount: 0, tax: 0 }),
-        });
-        const data = await res.json();
-        if (res.ok) {
-          window.location.href = '/api/pages/invoice-preview/' + data.id + '/';
+        var result = await AppDB.createInvoice({ items: items, discount: 0, tax: 0 });
+        if (result && result.id) {
+          window.location.href = '../invoice_preview_1/code.html?id=' + result.id;
         } else {
-          alert('Error: ' + JSON.stringify(data));
+          alert('Error creating invoice');
         }
       } catch (e) {
-        alert('Failed to create invoice. Server running?');
+        alert('Failed to create invoice: ' + e.message);
       }
     }
   </script>
-</div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-between items-center h-16 px-2 max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="dashboard" href="http://192.168.1.103:8000/api/pages/dashboard/"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Dashboard</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-1/5 transition-colors text-primary font-bold" data-path="billing" href="http://192.168.1.103:8000/api/pages/billing/"><span class="material-symbols-outlined">receipt_long</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Billing</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="inventory" href="http://192.168.1.103:8000/api/pages/inventory/"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Stock</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" href="http://192.168.1.103:8000/api/pages/reports/"><span class="material-symbols-outlined">bar_chart</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Reports</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" href="http://192.168.1.103:8000/api/pages/settings/"><span class="material-symbols-outlined">settings</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Settings</span></a></div></nav></body></html>
+</div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-between items-center h-16 px-2 max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="dashboard" href="../dashboard/code.html"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Dashboard</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-1/5 transition-colors text-primary font-bold" data-path="billing" href="#"><span class="material-symbols-outlined">receipt_long</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Billing</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="inventory" href="../inventory/code.html"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Stock</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" href="../reports/code.html"><span class="material-symbols-outlined">bar_chart</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Reports</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" href="../settings/code.html"><span class="material-symbols-outlined">settings</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Settings</span></a></div></nav></body></html>

@@ -4,7 +4,7 @@
       min-height: max(884px, 100dvh);
     }
   </style>
-  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-margin-mobile flex items-center justify-between gap-md"><div class="flex items-center gap-sm"><img alt="AutoParts Billing Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB-vfM_j8m0mnYqv-qrArJJYEZNCL75-aiphhaJQcoQVPoC3A76ANpHOPkyRLHYpekHZBe_YIcReDkTz21Qo27OWejspTfOy-OHBzifZoE8ZurJBpVWdgdm88C8pQB1JL3p7D-fCJFUAWcjR1Quvl2pK-MLA5cS1I4SVY9z1idflECdBvq_0vFDdkKAgQNDvUlSWumftxN0UTTSsPHXrPahAHCvSDX_Y343vXIR0Z-uCQUP_psnDU0JiHQBDnvyGhUjAAiv51tzQE"/><span class="font-title-lg text-title-lg text-primary truncate max-w-[180px]">Reports</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex-1 relative w-full pt-16 pb-24 bg-surface px-margin-mobile"><div class="flex flex-col w-full gap-lg">
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between gap-md"><div class="flex items-center gap-sm"><img alt="AutoParts Billing Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB-vfM_j8m0mnYqv-qrArJJYEZNCL75-aiphhaJQcoQVPoC3A76ANpHOPkyRLHYpekHZBe_YIcReDkTz21Qo27OWejspTfOy-OHBzifZoE8ZurJBpVWdgdm88C8pQB1JL3p7D-fCJFUAWcjR1Quvl2pK-MLA5cS1I4SVY9z1idflECdBvq_0vFDdkKAgQNDvUlSWumftxN0UTTSsPHXrPahAHCvSDX_Y343vXIR0Z-uCQUP_psnDU0JiHQBDnvyGhUjAAiv51tzQE"/><span class="font-title-lg text-title-lg text-primary truncate max-w-[180px]">Reports</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex-1 relative w-full pt-16 pt-safe pb-24 bg-surface px-margin-mobile"><div class="flex flex-col w-full gap-lg">
 <!-- Header & Export Section -->
 <div class="flex flex-col gap-sm">
 <div class="flex items-center justify-between">
@@ -177,77 +177,55 @@
 </div>
 </div>
 <script>
-  const API_BASE = 'http://192.168.1.103:8000/api';
   let currentPeriod = 'weekly';
-
-  function formatCurrency(amount) {
-    return '₹' + Number(amount).toLocaleString('en-IN', {maximumFractionDigits: 2});
-  }
 
   async function loadReports(period) {
     try {
-      const res = await fetch(API_BASE + '/reports/data/?period=' + period);
-      const data = await res.json();
+      var data = await AppDB.getReportsData(period);
 
-      // Update summary metrics
-      document.querySelectorAll('.grid.grid-cols-2 .font-headline-sm')[0].textContent = formatCurrency(data.total_revenue);
-      const changeEl = document.querySelectorAll('.grid.grid-cols-2 .text-green-600 span:last-child');
+      document.querySelectorAll('.grid.grid-cols-2 .font-headline-sm')[0].textContent = AppDB.formatCurrency(data.total_revenue);
+      var changeEl = document.querySelectorAll('.grid.grid-cols-2 .text-green-600 span:last-child');
       if (changeEl.length > 0) changeEl[0].textContent = (data.change_pct >= 0 ? '+' : '') + data.change_pct + '% vs last period';
 
       document.querySelectorAll('.grid.grid-cols-2 .font-headline-sm')[1].textContent = data.items_sold;
-      const avgEl = document.querySelectorAll('.grid.grid-cols-2 .text-on-surface-variant');
+      var avgEl = document.querySelectorAll('.grid.grid-cols-2 .text-on-surface-variant');
       if (avgEl.length > 0) avgEl[0].textContent = data.avg_per_order + ' avg. per order';
 
-      // Update chart bars
-      const bars = document.querySelectorAll('.h-48 .bg-primary, .h-48 .bg-primary-fixed-dim');
+      var bars = document.querySelectorAll('.h-48 .bg-primary, .h-48 .bg-primary-fixed-dim');
       if (data.sales_history.length > 0) {
-        const maxVal = Math.max(...data.sales_history.map(s => s.amount));
-        data.sales_history.slice(0, bars.length).forEach((s, i) => {
+        var maxVal = Math.max.apply(Math, data.sales_history.map(function(s) { return s.amount; }));
+        data.sales_history.slice(0, bars.length).forEach(function(s, i) {
           if (bars[i]) {
-            const pct = maxVal > 0 ? (s.amount / maxVal) * 85 : 10;
+            var pct = maxVal > 0 ? (s.amount / maxVal) * 85 : 10;
             bars[i].style.height = Math.max(pct, 10) + '%';
-            const tooltip = bars[i].querySelector('.opacity-0');
-            if (tooltip) tooltip.textContent = formatCurrency(s.amount);
+            var tooltip = bars[i].querySelector('.opacity-0');
+            if (tooltip) tooltip.textContent = AppDB.formatCurrency(s.amount);
           }
         });
       }
 
-      // Update chart labels
-      const labels = document.querySelectorAll('.flex.justify-between.px-1 span');
-      data.sales_history.slice(0, labels.length).forEach((s, i) => {
+      var labels = document.querySelectorAll('.flex.justify-between.px-1 span');
+      data.sales_history.slice(0, labels.length).forEach(function(s, i) {
         if (labels[i]) labels[i].textContent = s.label;
       });
 
-      // Update top products
-      const legendItems = document.querySelectorAll('.bg-surface-container-lowest .flex.flex-col.gap-sm .flex.items-center.justify-between');
-      if (data.top_products.length > 0) {
-        const totalTopQty = data.top_products.reduce((sum, p) => sum + p.qty, 0);
-        const colors = ['bg-primary', 'bg-primary-fixed-dim', 'bg-secondary', 'bg-surface-variant'];
-        const container = document.querySelector('.bg-surface-container-lowest .flex.flex-col.gap-sm');
-        if (container) {
-          container.innerHTML = data.top_products.map((p, i) => {
-            const pct = totalTopQty > 0 ? Math.round((p.qty / totalTopQty) * 100) : 0;
-            return `
-              <div class="flex items-center justify-between text-[12px]">
-                <div class="flex items-center gap-xs">
-                  <div class="w-2 h-2 rounded-full ${colors[i % colors.length]}"></div>
-                  <span class="text-on-surface font-label-md">${p.name}</span>
-                </div>
-                <span class="text-on-surface-variant">${pct}%</span>
-              </div>
-            `;
-          }).join('');
-        }
-        // Update pie chart percentage
-        const pctEl = document.querySelector('.absolute.inset-0 .font-label-lg');
+      var legendContainer = document.querySelector('.bg-surface-container-lowest .flex.flex-col.gap-sm');
+      if (data.top_products.length > 0 && legendContainer) {
+        var totalTopQty = data.top_products.reduce(function(sum, p) { return sum + p.qty; }, 0);
+        var colors = ['bg-primary', 'bg-primary-fixed-dim', 'bg-secondary', 'bg-surface-variant'];
+        legendContainer.innerHTML = data.top_products.map(function(p, i) {
+          var pct = totalTopQty > 0 ? Math.round((p.qty / totalTopQty) * 100) : 0;
+          return '<div class="flex items-center justify-between text-[12px]"><div class="flex items-center gap-xs"><div class="w-2 h-2 rounded-full ' + colors[i % colors.length] + '"></div><span class="text-on-surface font-label-md">' + p.name + '</span></div><span class="text-on-surface-variant">' + pct + '%</span></div>';
+        }).join('');
+        var pctEl = document.querySelector('.absolute.inset-0 .font-label-lg');
         if (pctEl) {
-          const top3Pct = data.top_products.slice(0,3).reduce((s, p) => s + p.qty, 0);
-          const grandTotal = data.top_products.reduce((s, p) => s + p.qty, 0);
-          pctEl.textContent = Math.round((top3Pct / grandTotal) * 100) + '%';
+          var top3Pct = data.top_products.slice(0,3).reduce(function(s, p) { return s + p.qty; }, 0);
+          var grandTotal = data.top_products.reduce(function(s, p) { return s + p.qty; }, 0);
+          pctEl.textContent = grandTotal > 0 ? Math.round((top3Pct / grandTotal) * 100) + '%' : '0%';
         }
       }
     } catch (e) {
-      console.warn('API not reachable, using static data');
+      console.warn('AppDB error', e);
     }
   }
 
@@ -295,4 +273,4 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-</style></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-between items-center h-16 px-2 max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="dashboard" href="http://192.168.1.103:8000/api/pages/dashboard/"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="billing" href="http://192.168.1.103:8000/api/pages/billing/"><span class="material-symbols-outlined">receipt_long</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Billing</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="inventory" href="http://192.168.1.103:8000/api/pages/inventory/"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Stock</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-1/5 transition-colors text-primary font-bold" data-path="reports" href="http://192.168.1.103:8000/api/pages/reports/"><span class="material-symbols-outlined">bar_chart</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Reports</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="settings" href="http://192.168.1.103:8000/api/pages/settings/"><span class="material-symbols-outlined">settings</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Settings</span></a></div></nav></body></html>
+</style></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-between items-center h-16 px-2 max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="dashboard" href="../dashboard/code.html"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="billing" href="../new_billing_1/code.html"><span class="material-symbols-outlined">receipt_long</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Billing</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="inventory" href="../inventory/code.html"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Stock</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-1/5 transition-colors text-primary font-bold" data-path="reports" href="../reports/code.html"><span class="material-symbols-outlined">bar_chart</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Reports</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="settings" href="../settings/code.html"><span class="material-symbols-outlined">settings</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Settings</span></a></div></nav></body></html>

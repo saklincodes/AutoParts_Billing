@@ -142,15 +142,18 @@ var AppDB = (function () {
   }
 
   function initDB() {
-    var inited = localStorage.getItem('appdb_inited');
-    if (inited === 'true') return Promise.resolve();
     return openDB().then(function () {
-      var proms = INITIAL_PRODUCTS.map(function (p) { return add('products', p); });
-      proms = proms.concat(INITIAL_CUSTOMERS.map(function (c) { return add('customers', c); }));
-      return Promise.all(proms);
+      return getAll('products').then(function(existing) {
+        if (!existing || existing.length === 0) {
+          var proms = INITIAL_PRODUCTS.map(function (p) { return add('products', p); });
+          proms = proms.concat(INITIAL_CUSTOMERS.map(function (c) { return add('customers', c); }));
+          return Promise.all(proms);
+        }
+      });
     }).then(function () {
-      var s = JSON.parse(JSON.stringify(INITIAL_SETTINGS));
-      localStorage.setItem('shop_settings', JSON.stringify(s));
+      if (!localStorage.getItem('shop_settings')) {
+        localStorage.setItem('shop_settings', JSON.stringify(INITIAL_SETTINGS));
+      }
       localStorage.setItem('appdb_inited', 'true');
     });
   }

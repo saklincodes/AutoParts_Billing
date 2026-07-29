@@ -35,12 +35,12 @@ jobs:
       - name: Grant execute permission
         run: chmod +x android/gradlew
 
-      - name: Build APK
+      - name: Build Release APK
         working-directory: ./android
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleRelease --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: autoparts-billing-apk
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: android/app/build/outputs/apk/release/*.apk

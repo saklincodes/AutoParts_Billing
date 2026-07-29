@@ -120,7 +120,7 @@
 <span class="material-symbols-outlined">save</span>
         Save Product
       </button>
-<button class="w-full h-12 bg-surface text-secondary font-label-lg text-label-lg rounded-full active:bg-surface-container-high transition-colors" onclick="history.back()" type="button">
+<button class="w-full h-12 bg-surface text-secondary font-label-lg text-label-lg rounded-full active:bg-surface-container-high transition-colors" onclick="window.location.href='../inventory/code.html'" type="button">
         Cancel
       </button>
 </div>
@@ -206,7 +206,7 @@
     AppDB.saveProduct(product).then(function() {
       btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Success';
       btn.classList.replace('bg-primary', 'bg-emerald-600');
-      setTimeout(function() { history.back(); }, 800);
+      setTimeout(function() { window.location.href = '../inventory/code.html'; }, 600);
     }).catch(function() {
       btn.innerHTML = '<span class="material-symbols-outlined">error</span> Error';
       btn.classList.remove('opacity-80', 'pointer-events-none');

@@ -78,51 +78,7 @@
 <h3 class="font-title-lg text-title-lg text-on-background">Recent Parts</h3>
 <span class="material-symbols-outlined text-outline">history</span>
 </div>
-<div class="flex flex-col gap-sm">
-<!-- Part Item 1 -->
-<div class="p-md bg-surface-container-lowest rounded-xl flex items-center gap-md shadow-sm active:bg-surface-container transition-colors cursor-pointer group">
-<div class="w-12 h-12 rounded-lg bg-background flex items-center justify-center">
-<img class="w-8 h-8 object-contain opacity-80" data-alt="High quality automotive oil filter in a clean studio setting, soft shadows, blue and silver packaging, professional photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDImXMZmxhKIGsTGn4_lWtIomwaxv6qkC5315DjLg5Uu81mSVRXe2RjvmPdOE3gco8XshXld6lUo3p0i0R-cdjitvT9PXA29htJp2LFAEl7Fwoi12tEzPAEr1LUb2l9k4x7AxMihHLRsb1-YV07PCdeXeAL_oXQrQq2C1fMqirrc_NLUNKuPqEcEI6WYjSGkQW4yQ9zk6XBcZuKREd854Lot5dpyWy5rtXJFlrsBuehjNtWFmT8dsKvZ8d9ehmsLGhVgAjX4Vrmwx0"/>
-</div>
-<div class="flex-1 min-w-0">
-<div class="flex justify-between items-start">
-<p class="font-label-lg text-label-lg text-on-background truncate">K&amp;N High-Flow Oil Filter</p>
-<span class="font-label-md text-label-md text-primary">$18.99</span>
-</div>
-<p class="font-label-md text-label-md text-on-surface-variant truncate">SKU: KN-204-1 • 12 in stock</p>
-</div>
-<span class="material-symbols-outlined text-primary opacity-0 group-active:opacity-100 transition-opacity">add_circle</span>
-</div>
-<!-- Part Item 2 -->
-<div class="p-md bg-surface-container-lowest rounded-xl flex items-center gap-md shadow-sm active:bg-surface-container transition-colors cursor-pointer group">
-<div class="w-12 h-12 rounded-lg bg-background flex items-center justify-center">
-<img class="w-8 h-8 object-contain opacity-80" data-alt="Ceramic brake pad set, heavy industrial feel, metallic textures, cool blue lighting, high detail macro automotive part." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaKmTSwcWTsIbzA1TcqhykupipP0CnIyPIVGPeMdnFceO1Gzcac2AJ6PItglIcBAbQstF8PGEJSCyEq18GTwwQNXCeXyUUEe_B-7AlnrQ9uuw4laOcJNly4dZtjj0iTzSLMrrpGwMSYmN5VlYhZ7Bvjg9BnbpocGrvnMMpAJ1PsTya2xZpv4fcmm3FsHBwfFYRFnuORbE6_O-0lg3tru8vc53bTnn7HAY6hze1blOINyAs3BgGMSA1hUIH5u25K4oZuFBtXg9lSjo"/>
-</div>
-<div class="flex-1 min-w-0">
-<div class="flex justify-between items-start">
-<p class="font-label-lg text-label-lg text-on-background truncate">Ceramic Brake Pads (Front)</p>
-<span class="font-label-md text-label-md text-primary">$64.50</span>
-</div>
-<p class="font-label-md text-label-md text-on-tertiary-container font-bold flex items-center gap-xs">
-<span class="material-symbols-outlined text-[14px]">warning</span>
-                        Low Stock (2 Left)
-                    </p>
-</div>
-<span class="material-symbols-outlined text-primary opacity-0 group-active:opacity-100 transition-opacity">add_circle</span>
-</div>
-<!-- Part Item 3 -->
-<div class="p-md bg-surface-container-lowest rounded-xl flex items-center gap-md shadow-sm active:bg-surface-container transition-colors cursor-pointer group">
-<div class="w-12 h-12 rounded-lg bg-background flex items-center justify-center">
-<img class="w-8 h-8 object-contain opacity-80" data-alt="Clear synthetic engine oil bottle, golden liquid, studio lighting with caustics, clean modern automotive branding." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBx1LRBSJHHFozxvoollXxpf5I5cZe0m68BUAh5YxE2t2offUwBJxJtAZWZTQ_Sxx34YPFriDt-fQtkH7mU29678fvjkTQm9hrO5Wdh7ypQgBmPB1RgmfPgWIWgmy8hQqmW9jebM8JdfjXJ-Mc_svwm7sGgW0djHI6qSMwSlQWXD50AbHDRpJ-OS8wcfCQqJFsvXlRD78y9Pyq1jdc_4nhBj4Nf0Kc4K79Ul7n9h2VjVPY3BqbF_YCSXPx-rvjj8HRbodqPrFSJb44"/>
-</div>
-<div class="flex-1 min-w-0">
-<div class="flex justify-between items-start">
-<p class="font-label-lg text-label-lg text-on-background truncate">Full Synthetic 5W-30 (1qt)</p>
-<span class="font-label-md text-label-md text-primary">$9.25</span>
-</div>
-<p class="font-label-md text-label-md text-on-surface-variant truncate">SKU: SY-530-Q • 48 in stock</p>
-</div>
-<span class="material-symbols-outlined text-primary opacity-0 group-active:opacity-100 transition-opacity">add_circle</span>
+<div class="flex flex-col gap-sm" id="quickProductsList">
 </div>
 </div>
 </div>
@@ -140,7 +96,7 @@
 <div class="fixed bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none z-[60]" id="toast-container"></div>
     <script>
         const searchInput = document.getElementById('quickSearch');
-        const recentPartsContainer = document.querySelector('.flex.flex-col.gap-sm');
+        const recentPartsContainer = document.getElementById('quickProductsList');
         let allProducts = [];
 
         async function loadProducts() {

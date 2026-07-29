@@ -167,7 +167,7 @@
 <span class="material-symbols-outlined">info</span>
 <span class="font-label-md text-label-md">Version 2.4.0 (Build 882)</span>
 </div>
-<button class="text-error font-label-lg text-label-lg px-md py-sm rounded-full bg-error-container/20 hover:bg-error-container/30 transition-colors">
+<button class="text-error font-label-lg text-label-lg px-md py-sm rounded-full bg-error-container/20 hover:bg-error-container/30 transition-colors" onclick="if(confirm('Logout from terminal?')){localStorage.clear();sessionStorage.clear();window.location.href='../index.html';}">
       Logout from Terminal
     </button>
 </div>

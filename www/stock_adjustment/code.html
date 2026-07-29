@@ -58,48 +58,6 @@
 </div>
 <!-- List Items -->
 <div class="flex flex-col gap-sm" id="adjustmentList">
-<!-- Item 1: Damage -->
-<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm flex items-center gap-md active:scale-95 transition-transform">
-<div class="w-12 h-12 rounded-lg overflow-hidden bg-surface-container">
-<img class="w-full h-full object-cover" data-alt="Close up photograph of a professional automotive spark plug, metallic finish, bokeh workshop background, high detail industrial photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAItFECX7vlcjenmVCje6arOVXTaDifgUvtW3pWwLfOeCq4_-yEyCNBxqk3JHw8rkchdtiLVG1APpfBNigEjg9baGLNscuJHxqdzohBM8DVNI3cAiGdu20IROIXVGJXh44PxxUA-KabcFNilEw1y1ASR6aPd0vAVlHg7LVE5teqUvbtWLr5eP5dd4xbHvMf-M-tCaXAkFyYBz75MP9sZ-Vbg9foVj7YOaeHBJS9JHFHqKWTNbR1YECnhEMO6S59c9ou9lEIj0rThaI"/>
-</div>
-<div class="flex-1 min-w-0">
-<h4 class="text-body-lg font-label-lg text-on-surface truncate">Bosch Platinum Spark Plug</h4>
-<p class="text-label-md font-label-md text-on-surface-variant">SKU: BSH-9920 • 14:20 PM</p>
-</div>
-<div class="flex flex-col items-end gap-xs">
-<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container text-label-md font-label-md">Damage</span>
-<span class="text-error font-title-lg">-3</span>
-</div>
-</div>
-<!-- Item 2: Restock -->
-<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm flex items-center gap-md active:scale-95 transition-transform">
-<div class="w-12 h-12 rounded-lg overflow-hidden bg-surface-container">
-<img class="w-full h-full object-cover" data-alt="Synthetic motor oil gold liquid pouring into a container, macro photography, studio lighting, deep amber tones, commercial automotive style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZVZYerIAu29r_G36zcpe0q9lvzP2NQGV18Aue5R-TyXdmq--p61N3GRRfVMOhfEPKJLQkVnbH9brONg8FTK7GZiuQgD6ITQbrSBwSwJp5xylXXnoTEJ5XnQTcgMySV4FXsdO5fuHbAcl8K-EteMdqdPnGAhfBzBeNZ32U8jyIdT2jALOl0cOMMJTIWpPVD6W7r6GlCd4tKL-EujIecyNBkfxA-S3l9_SAJbUz896kA8u76BB_CaD_MTShbzsZu7rPIESPfGQNnTI"/>
-</div>
-<div class="flex-1 min-w-0">
-<h4 class="text-body-lg font-label-lg text-on-surface truncate">Castrol EDGE 5W-30 4L</h4>
-<p class="text-label-md font-label-md text-on-surface-variant">SKU: CST-OIL-01 • 12:45 PM</p>
-</div>
-<div class="flex flex-col items-end gap-xs">
-<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-label-md font-label-md">In</span>
-<span class="text-primary font-title-lg">+24</span>
-</div>
-</div>
-<!-- Item 3: Return -->
-<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm flex items-center gap-md active:scale-95 transition-transform">
-<div class="w-12 h-12 rounded-lg overflow-hidden bg-surface-container">
-<img class="w-full h-full object-cover" data-alt="A clean, new automotive brake pad set, charcoal grey metallic texture, industrial product photography, professional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtkxa-4Htsp8AtMAK6FLIiQ_mmBEVM39aCQs3JIWZXY63ZJnRLbd9fmmP_vYU5Qqg90mSHfbr-xPQiG7O_nqeTR6qgSXYlLKGxwRGYr3g-dCIA2CJRprDq3kuVQn2iZgCbQETS761asy75qRaN_A72kofHWtGMeJGUFYyT4QvV1uWSBjr0DppHB-LFrcLHfYgfEHqik2tDe5olVSmjVtCT2TFviW8t62oohJp41PElKNqPhFlhCmGIFpALH_QZvw42jw6lv39QjFE"/>
-</div>
-<div class="flex-1 min-w-0">
-<h4 class="text-body-lg font-label-lg text-on-surface truncate">Brembo Front Brake Pads</h4>
-<p class="text-label-md font-label-md text-on-surface-variant">SKU: BRM-BP-X2 • 09:15 AM</p>
-</div>
-<div class="flex flex-col items-end gap-xs">
-<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant text-label-md font-label-md">Return</span>
-<span class="text-on-tertiary-container font-title-lg">+2</span>
-</div>
-</div>
 </div>
 </div>
 <!-- FAB -->
@@ -120,7 +78,7 @@
 <!-- Product Selection -->
 <div class="flex flex-col gap-sm">
 <label class="text-label-lg font-label-lg text-on-surface-variant">Product</label>
-<div class="bg-surface-container-high p-md rounded-xl flex items-center gap-md">
+<div class="bg-surface-container-high p-md rounded-xl flex items-center gap-md cursor-pointer active:scale-98 transition-transform" id="productPickerBtn" onclick="openProductPicker()">
 <span class="material-symbols-outlined text-primary">inventory_2</span>
 <div class="flex-1">
 <p class="text-body-lg font-label-lg text-on-surface">Select Product...</p>

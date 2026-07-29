@@ -93,55 +93,7 @@
 <h2 class="font-title-lg text-title-lg text-on-surface">Recent Invoices</h2>
 <a href="../new_billing_1/code.html" class="text-primary font-label-lg text-label-lg">View All</a>
 </div>
-<div class="flex flex-col gap-sm">
-<!-- Invoice Item 1 -->
-<div class="flex items-center gap-md p-md bg-surface-container-low rounded-xl active:bg-surface-container-high transition-colors">
-<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center shrink-0">
-<span class="material-symbols-outlined text-secondary">receipt_long</span>
-</div>
-<div class="flex-1 min-w-0">
-<div class="flex justify-between items-start">
-<span class="font-label-lg text-label-lg text-on-surface truncate">INV-2024-089</span>
-<span class="font-label-lg text-label-lg text-on-surface">$420.50</span>
-</div>
-<div class="flex justify-between items-center mt-xs">
-<span class="font-label-md text-label-md text-on-surface-variant">John Cooper • Brake Pads</span>
-<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-[10px] uppercase">Paid</span>
-</div>
-</div>
-</div>
-<!-- Invoice Item 2 -->
-<div class="flex items-center gap-md p-md bg-surface-container-low rounded-xl active:bg-surface-container-high transition-colors">
-<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center shrink-0">
-<span class="material-symbols-outlined text-secondary">receipt_long</span>
-</div>
-<div class="flex-1 min-w-0">
-<div class="flex justify-between items-start">
-<span class="font-label-lg text-label-lg text-on-surface truncate">INV-2024-088</span>
-<span class="font-label-lg text-label-lg text-on-surface">$1,280.00</span>
-</div>
-<div class="flex justify-between items-center mt-xs">
-<span class="font-label-md text-label-md text-on-surface-variant">City Motors • Oil Filters (Bulk)</span>
-<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-[10px] uppercase">Paid</span>
-</div>
-</div>
-</div>
-<!-- Invoice Item 3 -->
-<div class="flex items-center gap-md p-md bg-surface-container-low rounded-xl active:bg-surface-container-high transition-colors">
-<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center shrink-0">
-<span class="material-symbols-outlined text-secondary">receipt_long</span>
-</div>
-<div class="flex-1 min-w-0">
-<div class="flex justify-between items-start">
-<span class="font-label-lg text-label-lg text-on-surface truncate">INV-2024-087</span>
-<span class="font-label-lg text-label-lg text-on-surface">$85.20</span>
-</div>
-<div class="flex justify-between items-center mt-xs">
-<span class="font-label-md text-label-md text-on-surface-variant">Sarah Miller • Headlamp Bulb</span>
-<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-md text-[10px] uppercase">Pending</span>
-</div>
-</div>
-</div>
+<div class="flex flex-col gap-sm" id="recentInvoicesContainer">
 </div>
 </section>
 <!-- Empty State Placeholder (Visual Interest) -->
@@ -169,9 +121,13 @@
   async function loadDashboardStats() {
     try {
       var products = await AppDB.getProducts();
+      var invoices = await AppDB.getInvoices();
+      var today = new Date().toISOString().split('T')[0];
+      var todayRevenue = invoices.filter(function(i) { return (i.created_at || '').startsWith(today); }).reduce(function(sum, i) { return sum + (i.total_amount || 0); }, 0);
+      var monthlySales = invoices.reduce(function(sum, i) { return sum + (i.total_amount || 0); }, 0);
       var data = {
-        today_revenue: 0,
-        monthly_sales: 0,
+        today_revenue: todayRevenue,
+        monthly_sales: monthlySales,
         low_stock_count: products.filter(function(p) { return p.stock_qty <= p.low_stock_qty; }).length,
         total_products: products.length
       };
@@ -188,11 +144,15 @@
   async function loadRecentInvoices() {
     try {
       var invoices = await AppDB.getRecentInvoices(5);
-      var container = document.querySelector('.flex.flex-col.gap-sm');
-      if (!container || invoices.length === 0) return;
+      var container = document.getElementById('recentInvoicesContainer');
+      if (!container) return;
+      if (!invoices || invoices.length === 0) {
+        container.innerHTML = '<div class="p-md text-center text-on-surface-variant font-body-md opacity-60">No recent invoices created yet</div>';
+        return;
+      }
       container.innerHTML = invoices.map(function(inv) {
-        var statusClass = inv.status === 'paid' ? 'bg-secondary-container text-on-secondary-container' : 'bg-tertiary-fixed text-on-tertiary-fixed-variant';
-        return '<div class="flex items-center gap-md p-md bg-surface-container-low rounded-xl active:bg-surface-container-high transition-colors"><div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-secondary">receipt_long</span></div><div class="flex-1 min-w-0"><div class="flex justify-between items-start"><span class="font-label-lg text-label-lg text-on-surface truncate">' + inv.invoice_no + '</span><span class="font-label-lg text-label-lg text-on-surface">' + AppDB.formatCurrency(inv.total_amount) + '</span></div><div class="flex justify-between items-center mt-xs"><span class="font-label-md text-label-md text-on-surface-variant">' + (inv.customer_name || 'Walk-in') + '</span><span class="px-2 py-0.5 rounded-full ' + statusClass + ' font-label-md text-[10px] uppercase">' + inv.status + '</span></div></div></div>';
+        var statusClass = (inv.status || 'paid') === 'paid' ? 'bg-secondary-container text-on-secondary-container' : 'bg-tertiary-fixed text-on-tertiary-fixed-variant';
+        return '<div class="flex items-center gap-md p-md bg-surface-container-low rounded-xl active:bg-surface-container-high transition-colors"><div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-secondary">receipt_long</span></div><div class="flex-1 min-w-0"><div class="flex justify-between items-start"><span class="font-label-lg text-label-lg text-on-surface truncate">' + inv.invoice_no + '</span><span class="font-label-lg text-label-lg text-on-surface">' + AppDB.formatCurrency(inv.total_amount) + '</span></div><div class="flex justify-between items-center mt-xs"><span class="font-label-md text-label-md text-on-surface-variant">' + (inv.customer_name || 'Walk-in') + '</span><span class="px-2 py-0.5 rounded-full ' + statusClass + ' font-label-md text-[10px] uppercase">' + (inv.status || 'paid') + '</span></div></div></div>';
       }).join('');
     } catch (err) { console.warn('Failed to load invoices'); }
   }

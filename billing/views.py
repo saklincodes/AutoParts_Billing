@@ -446,7 +446,7 @@ class StockAdjustmentViewSet(viewsets.ModelViewSet):
     serializer_class = StockAdjustmentSerializer
 
     def create(self, request, *args, **kwargs):
-        product_id = request.data.get('product_id')
+        product_id = request.data.get('product_id') or request.data.get('product')
         quantity_change = int(request.data.get('quantity_change', 0))
 
         product = Product.objects.get(id=product_id)

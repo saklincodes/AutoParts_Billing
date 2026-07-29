@@ -145,9 +145,14 @@
 </div>
 </div>
 <!-- Floating Action Button -->
-<a class="fixed bottom-20 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40" href="/api/pages/add-product/" id="add-product-fab">
+<div class="fixed bottom-20 right-6 flex flex-col gap-3 z-40" id="fab-group">
+<a class="w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all" href="/api/pages/add-product/">
 <span class="material-symbols-outlined text-[28px]">add</span>
-</button>
+</a>
+<a class="w-14 h-14 bg-secondary-container text-on-secondary-container rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all" href="/api/pages/stock-adjustment/">
+<span class="material-symbols-outlined text-[28px]">swap_vert</span>
+</a>
+</div>
   <script>
     const API_BASE = '/api';
     let allProducts = [];
@@ -178,7 +183,7 @@
     function renderProducts(products) {
       const container = document.querySelector('.flex.flex-col.gap-md');
       if (!container) return;
-      const fab = document.getElementById('add-product-fab');
+      const fab = document.getElementById('fab-group');
       const emptyEnd = container.querySelector('.opacity-40');
 
       const productHtml = products.map(p => {
@@ -277,7 +282,7 @@
       });
 
       // FAB animation
-      const fab = document.getElementById('add-product-fab');
+      const fab = document.getElementById('fab-group');
       fab.animate([
         { transform: 'scale(1)', boxShadow: '0 10px 25px -5px rgba(0, 6, 102, 0.4)' },
         { transform: 'scale(1.1)', boxShadow: '0 15px 30px -5px rgba(0, 6, 102, 0.6)' },

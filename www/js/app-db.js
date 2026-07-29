@@ -604,22 +604,30 @@ var AppDB = (function () {
         }
       });
 
-      if (typeof window.Capacitor !== 'undefined' && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-        var App = window.Capacitor.Plugins.App;
-        App.addListener('backButton', function () {
-          var stack = getNav();
-          stack.pop();
-          var prev = stack.pop();
-          if (prev) {
-            setNav(stack);
-            window.location.href = prev;
-          } else {
-            setNav([]);
-            App.exitApp();
-          }
-        });
+      if (typeof window.Capacitor !== 'undefined' && window.Capacitor.Plugins) {
+        var plug = window.Capacitor.Plugins;
+
+        if (plug.StatusBar) {
+          plug.StatusBar.setBackgroundColor({ color: '#000000' });
+          plug.StatusBar.setStyle({ style: 'LIGHT' });
+          plug.StatusBar.setOverlaysWebView({ overlay: false });
+        }
+
+        if (plug.App) {
+          plug.App.addListener('backButton', function () {
+            var stack = getNav();
+            stack.pop();
+            var prev = stack.pop();
+            if (prev) {
+              setNav(stack);
+              window.location.href = prev;
+            } else {
+              setNav([]);
+              plug.App.exitApp();
+            }
+          });
+        }
       }
-    }
   };
 })();
 

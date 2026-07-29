@@ -68,7 +68,7 @@
 
     function navigateToDashboard() {
       if (navStarted) return;
-      localStorage.removeItem('_nav');
+      sessionStorage.removeItem('_nh');
       navStarted = true;
       var overlay = document.getElementById('transition-overlay');
       if (overlay) {

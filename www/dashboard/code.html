@@ -152,6 +152,7 @@
 </div>
 </div>
 </div>
+  <style>.df{opacity:0;transform:translateY(12px);transition:all .5s cubic-bezier(.16,1,.3,1)}.df.v{opacity:1;transform:translateY(0)}</style>
   <script>
   function updateGreeting() {
     const hour = new Date().getHours();
@@ -201,15 +202,10 @@
     loadDashboardStats();
     loadRecentInvoices();
 
-    const cards = document.querySelectorAll('section > div, section > button');
-    cards.forEach((card, index) => {
-      card.style.opacity = '0';
-      card.style.transform = 'translateY(10px)';
-      card.style.transition = 'all 0.4s cubic-bezier(0.2, 0, 0, 1)';
-      setTimeout(() => {
-        card.style.opacity = '1';
-        card.style.transform = 'translateY(0)';
-      }, 50 * index);
+    const els = document.querySelectorAll('#dashboard-content > *');
+    els.forEach((el, i) => {
+      el.classList.add('df');
+      setTimeout(() => el.classList.add('v'), 60 * i);
     });
   });
 

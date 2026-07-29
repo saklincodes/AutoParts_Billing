@@ -628,6 +628,7 @@ var AppDB = (function () {
           });
         }
       }
+    }
   };
 })();
 

@@ -31,7 +31,7 @@
   </div>
   <div class="w-full max-w-[220px] mb-12 flex flex-col items-center gap-md">
     <div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
-      <div class="h-full bg-primary w-0 transition-all duration-[1200ms] ease-in-out" id="progress-bar"></div>
+      <div class="h-full bg-primary w-0 transition-all duration-[500ms] ease-in-out" id="progress-bar"></div>
     </div>
     <p class="font-label-md text-label-md text-on-surface-variant/60 animate-pulse" id="loading-text">
       Initializing POS Environment...
@@ -43,7 +43,7 @@
     var navStarted = false;
 
     if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.SplashScreen) {
-      Capacitor.Plugins.SplashScreen.hide();
+      try { Capacitor.Plugins.SplashScreen.hide(); } catch(e) {}
     }
 
     function navigateToDashboard() {
@@ -57,13 +57,20 @@
       if (progressBar) progressBar.style.width = '100%';
     }, 50);
 
-    AppDB.init().then(function() {
-      setTimeout(navigateToDashboard, 800);
-    }).catch(function() {
-      setTimeout(navigateToDashboard, 800);
-    });
+    // Fail-safe redirect timer (max 600ms)
+    setTimeout(navigateToDashboard, 600);
 
-    setTimeout(navigateToDashboard, 2000);
+    try {
+      if (typeof AppDB !== 'undefined' && AppDB.init) {
+        AppDB.init().then(function() {
+          navigateToDashboard();
+        }).catch(function() {
+          navigateToDashboard();
+        });
+      }
+    } catch(e) {
+      navigateToDashboard();
+    }
   })();
 </script>
 </body>

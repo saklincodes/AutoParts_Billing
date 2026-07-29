@@ -96,8 +96,8 @@
         return `
           <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden group active:scale-[0.98] transition-transform">
             <div class="flex h-32">
-              <div class="w-32 h-full relative shrink-0 bg-surface-container-highest flex items-center justify-center">
-                <span class="material-symbols-outlined text-[40px] text-outline">inventory_2</span>
+              <div class="w-32 h-full relative shrink-0 bg-surface-container-highest flex items-center justify-center overflow-hidden">
+                ${p.image ? `<img src="${p.image}" class="w-full h-full object-cover"/>` : '<span class="material-symbols-outlined text-[40px] text-outline">inventory_2</span>'}
                 ${isLow ? '<div class="absolute top-2 left-2 px-2 py-1 bg-tertiary text-on-tertiary rounded font-label-md text-[10px] uppercase font-bold">Low Stock</div>' : ''}
               </div>
               <div class="flex-1 p-3 flex flex-col justify-between min-w-0">

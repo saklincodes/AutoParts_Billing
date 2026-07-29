@@ -580,36 +580,41 @@ var AppDB = (function () {
       return colors[Math.abs(hash) % colors.length];
     },
 
-    _getNav: function () {
-      return JSON.parse(localStorage.getItem('_nav') || '[]');
-    },
-    _setNav: function (s) {
-      localStorage.setItem('_nav', JSON.stringify(s));
-    },
-
-    pushHistory: function () {
-      var url = window.location.href;
-      var s = this._getNav();
-      if (s.length === 0 || s[s.length - 1] !== url) {
-        s.push(url);
-        this._setNav(s);
-      }
-    },
-
     initBackButton: function () {
-      this.pushHistory();
+      var navKey = '_nh';
+      function getNav() { return JSON.parse(sessionStorage.getItem(navKey) || '[]'); }
+      function setNav(s) { sessionStorage.setItem(navKey, JSON.stringify(s)); }
+
+      var currentUrl = window.location.href;
+      var s = getNav();
+      if (s.length === 0 || s[s.length - 1] !== currentUrl) {
+        s.push(currentUrl);
+        setNav(s);
+      }
+
+      document.addEventListener('click', function (e) {
+        var t = e.target;
+        while (t && t.tagName !== 'A') t = t.parentNode;
+        if (t && t.href && t.href.indexOf(window.location.host) !== -1 && !t.getAttribute('download')) {
+          var ss = getNav();
+          if (ss.length === 0 || ss[ss.length - 1] !== window.location.href) {
+            ss.push(window.location.href);
+            setNav(ss);
+          }
+        }
+      });
+
       if (typeof window.Capacitor !== 'undefined' && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
         var App = window.Capacitor.Plugins.App;
-        var self = this;
         App.addListener('backButton', function () {
-          var s = self._getNav();
-          s.pop();
-          var prev = s.pop();
+          var stack = getNav();
+          stack.pop();
+          var prev = stack.pop();
           if (prev) {
-            self._setNav(s);
+            setNav(stack);
             window.location.href = prev;
           } else {
-            self._setNav([]);
+            setNav([]);
             App.exitApp();
           }
         });

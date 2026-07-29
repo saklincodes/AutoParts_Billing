@@ -1,0 +1,6 @@
+/* Offline Font Fallback for AutoParts Billing App */
+/* Inter font fallback to system sans-serif */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Material Symbols offline fallback */
+/* If Google Fonts not available, icons show as text - handled below */

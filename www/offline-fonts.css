@@ -36,6 +36,23 @@
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
+/* Enable Full Vertical Touch Scrolling on Mobile */
+html {
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  height: auto;
+  min-height: 100%;
+}
+
+body {
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  height: auto;
+  min-height: 100vh;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
 /* Smooth Native Page Transitions */
 @keyframes pageFadeIn {
   0% { opacity: 0; transform: translateY(4px); }

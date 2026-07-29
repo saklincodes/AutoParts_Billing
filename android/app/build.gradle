@@ -18,7 +18,7 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file('../putul-release-key.keystore')
+            storeFile file('../../putul-release-key.keystore')
             storePassword 'putul123'
             keyAlias 'putul'
             keyPassword 'putul123'

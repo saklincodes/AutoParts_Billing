@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.db.models import Sum, Count, Q, F, DecimalField
 from django.db.models.functions import TruncDate, TruncMonth, TruncYear
@@ -319,8 +320,13 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         customer_id = request.data.get('customer_id')
         items_data = request.data.get('items', [])
-        discount = float(request.data.get('discount', 0))
-        tax = float(request.data.get('tax', 0))
+        if not items_data:
+            return Response({'error': 'At least one item is required'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            discount = Decimal(str(request.data.get('discount', 0)))
+            tax = Decimal(str(request.data.get('tax', 0)))
+        except Exception:
+            return Response({'error': 'Invalid discount or tax value'}, status=status.HTTP_400_BAD_REQUEST)
 
         last_invoice = Invoice.objects.order_by('-id').first()
         next_id = (last_invoice.id + 1) if last_invoice else 1
@@ -328,17 +334,23 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
         customer = None
         if customer_id:
-            customer = Customer.objects.get(id=customer_id)
+            try:
+                customer = Customer.objects.get(id=customer_id)
+            except Customer.DoesNotExist:
+                return Response({'error': f'Customer with id {customer_id} not found'}, status=status.HTTP_400_BAD_REQUEST)
 
-        subtotal = 0
+        subtotal = Decimal('0.00')
         invoice_items = []
         for item in items_data:
             serializer = InvoiceItemCreateSerializer(data=item)
             serializer.is_valid(raise_exception=True)
-            product = Product.objects.get(id=serializer.validated_data['product_id'])
+            try:
+                product = Product.objects.get(id=serializer.validated_data['product_id'])
+            except Product.DoesNotExist:
+                return Response({'error': f'Product with id {serializer.validated_data["product_id"]} not found'}, status=status.HTTP_400_BAD_REQUEST)
             qty = serializer.validated_data['quantity']
-            unit_price = serializer.validated_data['unit_price']
-            item_subtotal = qty * float(unit_price)
+            unit_price = Decimal(str(serializer.validated_data['unit_price']))
+            item_subtotal = Decimal(qty) * unit_price
             subtotal += item_subtotal
 
             invoice_items.append({

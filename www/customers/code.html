@@ -1,0 +1,162 @@
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "tertiary-fixed": "#ffdbcb", "surface-container-lowest": "#ffffff", "on-error": "#ffffff", "secondary-fixed-dim": "#b4cad6", "primary-fixed": "#e0e0ff", "surface-container-high": "#e7e8e9", "secondary-container": "#cfe6f2", "outline": "#767683", "secondary-fixed": "#cfe6f2", "error": "#ba1a1a", "surface-bright": "#f8f9fa", "error-container": "#ffdad6", "outline-variant": "#c6c5d4", "on-primary": "#ffffff", "inverse-on-surface": "#f0f1f2", "surface-variant": "#e1e3e4", "surface": "#f8f9fa", "on-secondary-fixed-variant": "#354a53", "on-primary-container": "#8690ee", "on-tertiary-fixed": "#341100", "surface-dim": "#d9dadb", "on-error-container": "#93000a", "tertiary": "#331000", "tertiary-fixed-dim": "#ffb691", "primary-fixed-dim": "#bdc2ff", "on-primary-fixed-variant": "#343d96", "inverse-surface": "#2e3132", "on-background": "#191c1d", "tertiary-container": "#542000", "on-primary-fixed": "#000767", "secondary": "#4c616c", "surface-tint": "#4c56af", "on-secondary-fixed": "#071e27", "surface-container-low": "#f3f4f5", "primary": "#000666", "inverse-primary": "#bdc2ff", "primary-container": "#1a237e", "on-tertiary": "#ffffff", "on-secondary-container": "#526772", "on-surface": "#191c1d", "surface-container": "#edeeef", "surface-container-highest": "#e1e3e4", "on-tertiary-fixed-variant": "#793100", "on-secondary": "#ffffff", "on-tertiary-container": "#fa6d00", "background": "#f8f9fa" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "margin-mobile": "16px", "lg": "24px", "gutter": "24px", "base": "4px", "xl": "32px", "sm": "8px", "margin-desktop": "32px", "md": "16px", "xs": "4px" }, "fontFamily": { "headline-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "body-md": ["Inter"], "title-lg": ["Inter"], "label-md": ["Inter"], "headline-lg": ["Inter"], "body-lg": ["Inter"], "label-lg": ["Inter"], "headline-md": ["Inter"] }, "fontSize": { "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}], "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}], "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}], "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}], "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "500"}], "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}], "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}], "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "600"}], "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}] } } } }</script><style>@layer base { body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); } .pt-safe { padding-top: env(safe-area-inset-top, 0px); } } .no-scrollbar::-webkit-scrollbar { display: none; } </style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-background font-body-md text-on-surface"><header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 flex items-center justify-between px-margin-mobile"><div class="flex items-center gap-sm"><img alt="Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLuvIrNaIfXRA6BPlb9HQ9Zgrih5ifjPd-wRDf17Xikfw6qTLCB85tbFDSdDy-WOmgH5C7VbWMnx1aiUsqmPB53QX56HdhK9oV599l0yytOgGCfFKyqiprCgLP0SU0508nJm-rWGyzjsiWpGpozfhwrbThNSkafPnUCnObbKQbSSOCjrL2-tQr7aBd4shqSJKG4Ny_0AbdRVlF3fTw2DppEZsHIgSWQAoazOi9ucG3ZLFd79FulL9fYzUQ"/><span class="font-title-lg text-title-lg text-primary truncate max-w-[180px]">Customers</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="pt-16 pb-24 min-h-screen bg-background"><div class="flex flex-col w-full px-margin-mobile gap-lg">
+<!-- Search & Filter Header -->
+<div class="flex flex-col gap-md">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full h-14 pl-xl pr-md bg-surface-container-low rounded-xl font-body-lg text-on-surface outline-none focus:bg-surface-container-high transition-colors" placeholder="Search name, mobile, or plate..." type="text"/>
+<button class="absolute right-sm top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+<!-- Quick Stats Row -->
+<div class="flex gap-sm overflow-x-auto no-scrollbar pb-xs">
+<div class="flex-shrink-0 px-md py-sm bg-primary-container rounded-full flex items-center gap-xs text-on-primary-container">
+<span class="font-label-lg text-label-lg">All (124)</span>
+</div>
+<div class="flex-shrink-0 px-md py-sm bg-surface-container rounded-full flex items-center gap-xs text-on-surface-variant">
+<span class="font-label-lg text-label-lg">Frequent</span>
+</div>
+<div class="flex-shrink-0 px-md py-sm bg-surface-container rounded-full flex items-center gap-xs text-on-surface-variant">
+<span class="font-label-lg text-label-lg">Inactive</span>
+</div>
+</div>
+</div>
+<!-- Customer List -->
+<div class="flex flex-col gap-md" id="customer-list">
+<!-- Customer cards loaded via API -->
+</div>
+<!-- Empty State (Hidden by default, shown via JS if list cleared) -->
+<div class="hidden flex flex-col items-center justify-center py-xl px-xl text-center" id="empty-state">
+<div class="relative w-48 h-48 mb-lg">
+<svg class="w-full h-full" viewbox="0 0 200 200">
+<circle class="text-surface-container-high" cx="100" cy="100" fill="currentColor" r="80"></circle>
+<path class="text-outline" d="M70 100 Q100 70 130 100" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="4"></path>
+<circle class="text-outline" cx="85" cy="90" fill="currentColor" r="4"></circle>
+<circle class="text-outline" cx="115" cy="90" fill="currentColor" r="4"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center animate-pulse">
+<span class="material-symbols-outlined text-outline/20 text-[120px]">person_off</span>
+</div>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface mb-sm">Quiet in the shop?</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mb-xl">We couldn't find any customers matching your search. Try a different name or add a new profile.</p>
+<button class="px-lg py-md bg-primary text-on-primary rounded-full font-label-lg text-label-lg flex items-center gap-sm shadow-md">
+<span class="material-symbols-outlined">person_add</span>
+      Add New Customer
+    </button>
+</div>
+<!-- Floating Action Button -->
+<button class="fixed bottom-24 right-margin-mobile w-14 h-14 bg-primary text-on-primary rounded-xl shadow-xl flex items-center justify-center active:scale-95 transition-transform z-10">
+<span class="material-symbols-outlined text-[28px]">person_add</span>
+</button>
+</div>
+<script>
+  const API_BASE = 'http://192.168.1.103:8000/api';
+  let allCustomers = [];
+
+  function getInitials(name) {
+    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+  }
+
+  function getAvatarBg(name) {
+    const colors = ['bg-secondary-container', 'bg-primary-fixed', 'bg-secondary-fixed-dim', 'bg-primary-container', 'bg-tertiary-fixed'];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+  }
+
+  async function loadCustomers(search = '') {
+    try {
+      let url = API_BASE + '/customers/';
+      if (search) url += '?search=' + encodeURIComponent(search);
+      const res = await fetch(url);
+      allCustomers = await res.json();
+      renderCustomers(allCustomers);
+      // Update count
+      const countEl = document.querySelector('.bg-primary-container span');
+      if (countEl) countEl.textContent = 'All (' + allCustomers.length + ')';
+    } catch (e) {
+      console.warn('API not reachable');
+    }
+  }
+
+  function renderCustomers(customers) {
+    const container = document.getElementById('customer-list');
+    const emptyState = document.getElementById('empty-state');
+
+    if (customers.length === 0) {
+      container.innerHTML = '';
+      container.classList.add('hidden');
+      emptyState.classList.remove('hidden');
+      return;
+    }
+
+    container.classList.remove('hidden');
+    emptyState.classList.add('hidden');
+
+    container.innerHTML = customers.map(c => {
+      const initials = getInitials(c.name);
+      const bg = getAvatarBg(c.name);
+      return `
+        <div class="bg-surface-container-lowest p-md rounded-xl shadow-sm flex items-center gap-md active:scale-[0.98] transition-transform cursor-pointer">
+          <div class="w-12 h-12 rounded-full ${bg} flex items-center justify-center text-on-secondary-container shrink-0">
+            <span class="font-headline-sm text-headline-sm">${initials}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-start">
+              <h3 class="font-title-lg text-title-lg text-on-surface truncate">${c.name}</h3>
+              ${c.is_premium ? '<span class="px-sm py-[2px] bg-tertiary-fixed text-on-tertiary-fixed rounded font-label-md text-label-md uppercase tracking-wider shrink-0">Premium</span>' : ''}
+            </div>
+            <p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-xs">
+              <span class="material-symbols-outlined text-[16px]">smartphone</span>
+              ${c.phone}
+            </p>
+            <div class="flex items-center gap-md mt-sm pt-sm border-t border-outline-variant/30">
+              ${c.vehicle_no ? '<div class="flex items-center gap-xs text-primary"><span class="material-symbols-outlined text-[18px]">directions_car</span><span class="font-label-lg text-label-lg">' + c.vehicle_no + '</span></div>' : ''}
+              <div class="flex items-center gap-xs text-outline">
+                <span class="material-symbols-outlined text-[18px]">history</span>
+                <span class="font-label-md text-label-md">${new Date(c.created_at).toLocaleDateString()}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadCustomers();
+
+    const searchInput = document.querySelector('input');
+    let searchTimer;
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        loadCustomers(e.target.value.trim());
+      }, 300);
+    });
+
+    // Add Customer FAB
+    document.querySelectorAll('button').forEach(btn => {
+      if (btn.querySelector('.material-symbols-outlined')?.textContent === 'person_add') {
+        btn.addEventListener('click', () => {
+          const name = prompt('Customer name:');
+          if (!name) return;
+          const phone = prompt('Phone number:') || '';
+          const vehicle = prompt('Vehicle number:') || '';
+          fetch(API_BASE + '/customers/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, phone, vehicle_no: vehicle })
+          }).then(r => r.json()).then(() => loadCustomers()).catch(() => alert('Error creating customer'));
+        });
+      }
+    });
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 bg-surface/80 backdrop-blur-xl pb-safe shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-semibold"><div class="flex justify-between items-center h-16 px-xs"><a class="flex-1 flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" data-path="dashboard" href="/api/pages/dashboard/"><span class="material-symbols-outlined">dashboard</span><span class="font-label-md text-label-md">Dashboard</span></a><a class="flex-1 flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" data-path="billing" href="/api/pages/billing/"><span class="material-symbols-outlined">receipt_long</span><span class="font-label-md text-label-md">Billing</span></a><a aria-current="page" class="flex-1 flex flex-col items-center justify-center gap-xs transition-colors text-primary font-semibold" data-path="customers" href="/api/pages/customers/"><span class="material-symbols-outlined">group</span><span class="font-label-md text-label-md">Customers</span></a><a class="flex-1 flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" data-path="inventory" href="/api/pages/inventory/"><span class="material-symbols-outlined">inventory_2</span><span class="font-label-md text-label-md">Stock</span></a><a class="flex-1 flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" data-path="reports" href="#"><span class="material-symbols-outlined">analytics</span><span class="font-label-md text-label-md">Reports</span></a><a class="flex-1 flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined">settings</span><span class="font-label-md text-label-md">Settings</span></a></div></nav></body></html>

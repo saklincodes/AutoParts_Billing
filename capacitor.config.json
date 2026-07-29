@@ -1,0 +1,19 @@
+{
+  "appId": "com.putul.autoparts.billing",
+  "appName": "PutulAutoParts",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "hostname": "localhost",
+    "androidScheme": "http",
+    "cleartext": true
+  },
+  "android": {
+    "buildOptions": {
+      "keystorePath": "",
+      "keystorePassword": "",
+      "keystoreAlias": "",
+      "keystoreAliasPassword": ""
+    }
+  }
+}

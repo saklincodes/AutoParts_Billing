@@ -1,0 +1,205 @@
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "tertiary-fixed": "#ffdbcb", "surface-container-lowest": "#ffffff", "on-error": "#ffffff", "secondary-fixed-dim": "#b4cad6", "primary-fixed": "#e0e0ff", "surface-container-high": "#e7e8e9", "secondary-container": "#cfe6f2", "outline": "#767683", "secondary-fixed": "#cfe6f2", "error": "#ba1a1a", "surface-bright": "#f8f9fa", "error-container": "#ffdad6", "outline-variant": "#c6c5d4", "on-primary": "#ffffff", "inverse-on-surface": "#f0f1f2", "surface-variant": "#e1e3e4", "surface": "#f8f9fa", "on-secondary-fixed-variant": "#354a53", "on-primary-container": "#8690ee", "on-tertiary-fixed": "#341100", "surface-dim": "#d9dadb", "on-error-container": "#93000a", "tertiary": "#331000", "tertiary-fixed-dim": "#ffb691", "primary-fixed-dim": "#bdc2ff", "on-primary-fixed-variant": "#343d96", "inverse-surface": "#2e3132", "on-background": "#191c1d", "tertiary-container": "#542000", "on-primary-fixed": "#000767", "secondary": "#4c616c", "surface-tint": "#4c56af", "on-secondary-fixed": "#071e27", "surface-container-low": "#f3f4f5", "primary": "#000666", "inverse-primary": "#bdc2ff", "primary-container": "#1a237e", "on-tertiary": "#ffffff", "on-secondary-container": "#526772", "on-surface": "#191c1d", "surface-container": "#edeeef", "surface-container-highest": "#e1e3e4", "on-tertiary-fixed-variant": "#793100", "on-secondary": "#ffffff", "on-tertiary-container": "#fa6d00", "background": "#f8f9fa" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "margin-mobile": "16px", "lg": "24px", "gutter": "24px", "base": "4px", "xl": "32px", "sm": "8px", "margin-desktop": "32px", "md": "16px", "xs": "4px" }, "fontFamily": { "headline-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "body-md": ["Inter"], "title-lg": ["Inter"], "label-md": ["Inter"], "headline-lg": ["Inter"], "body-lg": ["Inter"], "label-lg": ["Inter"], "headline-md": ["Inter"] }, "fontSize": { "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}], "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}], "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}], "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}], "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "500"}], "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}], "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}], "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "600"}], "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}] } } } }</script></head><body class="bg-background font-body-md text-on-surface"><header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-14 flex items-center px-4 gap-4"><button class="w-10 h-10 flex items-center justify-center text-on-surface" onclick="history.back()"><span class="material-symbols-outlined">arrow_back</span></button><div class="flex items-center gap-2 flex-1"><img alt="Logo" class="h-6 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLuvIrNaIfXRA6BPlb9HQ9Zgrih5ifjPd-wRDf17Xikfw6qTLCB85tbFDSdDy-WOmgH5C7VbWMnx1aiUsqmPB53QX56HdhK9oV599l0yytOgGCfFKyqiprCgLP0SU0508nJm-rWGyzjsiWpGpozfhwrbThNSkafPnUCnObbKQbSSOCjrL2-tQr7aBd4shqSJKG4Ny_0AbdRVlF3fTw2DppEZsHIgSWQAoazOi9ucG3ZLFd79FulL9fYzUQ"/><h1 class="font-title-lg text-title-lg text-on-surface truncate">Invoice Details</h1></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="pt-14 min-h-screen bg-background"><div class="flex flex-col w-full pb-xl">
+<!-- Interactive View Toggle -->
+<div class="px-margin-mobile mb-md">
+<div class="bg-surface-container rounded-xl p-1 flex items-center shadow-sm">
+<button class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-all duration-200 bg-surface-container-lowest text-primary shadow-sm" id="thermalToggle" onclick="switchPreview('thermal')">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+<span class="font-label-lg text-label-lg">Thermal (80mm)</span>
+</button>
+<button class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-all duration-200 text-on-surface-variant" id="a4Toggle" onclick="switchPreview('a4')">
+<span class="material-symbols-outlined text-[18px]">description</span>
+<span class="font-label-lg text-label-lg">A4 Standard</span>
+</button>
+</div>
+</div>
+<!-- Preview Canvas Wrapper -->
+<div class="flex-1 overflow-hidden px-margin-mobile flex justify-center">
+<!-- Thermal Preview Wrapper -->
+<div class="w-full max-w-[320px] bg-white shadow-xl flex flex-col p-4 animate-in fade-in slide-in-from-bottom-4 duration-500" id="thermalView" style="font-family: 'Inter', monospace;">
+<div class="flex flex-col items-center text-center border-b border-dashed border-outline-variant pb-4 mb-4">
+<img alt="Logo" class="w-12 h-12 mb-2 object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLuvIrNaIfXRA6BPlb9HQ9Zgrih5ifjPd-wRDf17Xikfw6qTLCB85tbFDSdDy-WOmgH5C7VbWMnx1aiUsqmPB53QX56HdhK9oV599l0yytOgGCfFKyqiprCgLP0SU0508nJm-rWGyzjsiWpGpozfhwrbThNSkafPnUCnObbKQbSSOCjrL2-tQr7aBd4shqSJKG4Ny_0AbdRVlF3fTw2DppEZsHIgSWQAoazOi9ucG3ZLFd79FulL9fYzUQ"/>
+<h2 class="font-title-lg text-title-lg text-on-surface uppercase tracking-tight">Putul Auto Parts</h2>
+<p class="font-label-md text-label-md text-on-surface-variant">Station Road, Ward No. 12, Main Market</p>
+<p class="font-label-md text-label-md text-on-surface-variant">Mo: +91 98765 43210</p>
+</div>
+<div class="space-y-1 mb-4 text-[13px]">
+<div class="flex justify-between"><span class="text-on-surface-variant">Inv:</span> <span class="font-bold">#INV-2024-082</span></div>
+<div class="flex justify-between"><span class="text-on-surface-variant">Date:</span> <span>24/05/2024 14:30</span></div>
+<div class="flex justify-between"><span class="text-on-surface-variant">Cust:</span> <span>Rajesh Kumar</span></div>
+<div class="flex justify-between"><span class="text-on-surface-variant">Vehicle:</span> <span>BR-01-AB-1234</span></div>
+</div>
+<div class="border-t border-b border-dashed border-outline-variant py-2 mb-4">
+<div class="flex justify-between font-label-md text-label-md mb-2">
+<span class="w-1/2">Item</span>
+<span class="w-1/4 text-center">Qty</span>
+<span class="w-1/4 text-right">Amt</span>
+</div>
+<div class="space-y-2 text-[13px]">
+<div class="flex justify-between">
+<span class="w-1/2">Engine Oil 5W30 4L</span>
+<span class="w-1/4 text-center">1</span>
+<span class="w-1/4 text-right">2,450</span>
+</div>
+<div class="flex justify-between">
+<span class="w-1/2">Brake Pad Front</span>
+<span class="w-1/4 text-center">2</span>
+<span class="w-1/4 text-right">1,200</span>
+</div>
+</div>
+</div>
+<div class="space-y-1 mb-6">
+<div class="flex justify-between font-label-md text-label-md"><span>Subtotal:</span> <span>₹3,650.00</span></div>
+<div class="flex justify-between font-label-md text-label-md"><span>GST (18%):</span> <span>₹657.00</span></div>
+<div class="flex justify-between font-title-lg text-title-lg pt-1 border-t border-outline-variant"><span>Total:</span> <span>₹4,307.00</span></div>
+</div>
+<div class="flex flex-col items-center gap-2 text-center">
+<div class="w-20 h-20 bg-surface-container flex items-center justify-center rounded">
+<span class="material-symbols-outlined text-[48px] text-on-surface-variant">qr_code_2</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant italic">Scan to Pay or Review</p>
+<p class="font-label-md text-label-md mt-4 opacity-70">Computer Generated Receipt</p>
+</div>
+</div>
+<!-- A4 Preview Wrapper (Hidden initially) -->
+<div class="hidden w-full max-w-[600px] bg-white shadow-xl p-8 animate-in fade-in slide-in-from-bottom-4 duration-500" id="a4View">
+<div class="flex justify-between items-start border-b-2 border-primary pb-6 mb-8">
+<div class="flex gap-4">
+<img alt="Logo" class="w-16 h-16 object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLuvIrNaIfXRA6BPlb9HQ9Zgrih5ifjPd-wRDf17Xikfw6qTLCB85tbFDSdDy-WOmgH5C7VbWMnx1aiUsqmPB53QX56HdhK9oV599l0yytOgGCfFKyqiprCgLP0SU0508nJm-rWGyzjsiWpGpozfhwrbThNSkafPnUCnObbKQbSSOCjrL2-tQr7aBd4shqSJKG4Ny_0AbdRVlF3fTw2DppEZsHIgSWQAoazOi9ucG3ZLFd79FulL9fYzUQ"/>
+<div>
+<h1 class="font-headline-md text-headline-md text-on-surface leading-tight">PUTUL AUTO PARTS<br/>AND AUTOSCAN</h1>
+<p class="font-label-md text-label-md text-on-surface-variant mt-1">Specialist in Diagnostic &amp; Genuine Spares</p>
+</div>
+</div>
+<div class="text-right">
+<div class="inline-block bg-primary text-on-primary px-4 py-1 rounded font-label-lg text-label-lg mb-2">TAX INVOICE</div>
+<p class="font-body-md text-body-md text-on-surface">#INV-2024-082</p>
+<p class="font-label-md text-label-md text-on-surface-variant">Date: May 24, 2024</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-8 mb-8">
+<div>
+<h3 class="font-label-lg text-label-lg text-primary uppercase tracking-wider mb-2">Service Station</h3>
+<p class="font-body-md text-body-md">Station Road, Ward No. 12<br/>Main Market, District Center<br/>GSTIN: 24AAACP1234A1Z1<br/>Mo: +91 98765 43210</p>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg text-primary uppercase tracking-wider mb-2">Customer Details</h3>
+<p class="font-body-md text-body-md font-bold">Rajesh Kumar</p>
+<p class="font-body-md text-body-md">Vehicle: Mahindra Scorpio-N<br/>Reg No: BR-01-AB-1234<br/>Odometer: 12,450 km</p>
+</div>
+</div>
+<table class="w-full mb-8">
+<thead>
+<tr class="bg-surface-container-high text-on-surface-variant font-label-lg text-label-lg">
+<th class="text-left py-3 px-2">Product Description</th>
+<th class="text-center py-3 px-2">Qty</th>
+<th class="text-right py-3 px-2">Rate</th>
+<th class="text-right py-3 px-2">Tax</th>
+<th class="text-right py-3 px-2">Amount</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md divide-y divide-surface-container">
+<tr>
+<td class="py-4 px-2">Engine Oil 5W30 Synthetic (4L)</td>
+<td class="text-center py-4 px-2">1</td>
+<td class="text-right py-4 px-2">2,450.00</td>
+<td class="text-right py-4 px-2">441.00</td>
+<td class="text-right py-4 px-2">2,891.00</td>
+</tr>
+<tr>
+<td class="py-4 px-2">Brake Pad Front - Premium</td>
+<td class="text-center py-4 px-2">2</td>
+<td class="text-right py-4 px-2">600.00</td>
+<td class="text-right py-4 px-2">216.00</td>
+<td class="text-right py-4 px-2">1,416.00</td>
+</tr>
+</tbody>
+</table>
+<div class="flex justify-between items-end gap-8 pt-6 border-t border-surface-container-highest">
+<div class="max-w-[50%]">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-1">Total in Words</p>
+<p class="font-body-md text-body-md italic text-on-surface">Four Thousand Three Hundred and Seven Rupees Only</p>
+</div>
+<div class="w-full max-w-[240px] space-y-2">
+<div class="flex justify-between text-on-surface-variant"><span>Subtotal</span> <span>₹3,650.00</span></div>
+<div class="flex justify-between text-on-surface-variant"><span>Total GST (18%)</span> <span>₹657.00</span></div>
+<div class="flex justify-between font-headline-sm text-headline-sm text-primary pt-2 border-t-2 border-primary"><span>Total</span> <span>₹4,307.00</span></div>
+</div>
+</div>
+<div class="mt-12 flex justify-between items-center opacity-60">
+<div>
+<p class="font-label-md text-label-md">Thank you for your business!</p>
+<p class="font-label-md text-label-md">This is a computer generated invoice and requires no signature.</p>
+</div>
+<div class="text-right">
+<div class="w-16 h-16 bg-surface-container-highest flex items-center justify-center mb-1">
+<span class="material-symbols-outlined text-[32px]">qr_code</span>
+</div>
+<p class="text-[10px] uppercase font-bold">Feedback Scan</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest p-margin-mobile flex gap-4 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+<button class="flex-1 bg-surface-container-high text-on-surface py-3 rounded-xl flex items-center justify-center gap-2 font-label-lg text-label-lg active:scale-95 transition-transform">
+<span class="material-symbols-outlined">share</span>
+<span>Share</span>
+</button>
+<button class="flex-[2] bg-primary text-on-primary py-3 rounded-xl flex items-center justify-center gap-2 font-label-lg text-label-lg shadow-md active:scale-95 transition-transform overflow-hidden relative" id="printBtn" onclick="triggerPrintAnimation()">
+<span class="material-symbols-outlined" id="printIcon">print</span>
+<span id="printText">Print Invoice</span>
+<div class="absolute bottom-0 left-0 h-1 bg-on-primary/30 w-0 transition-all duration-[2000ms] ease-out" id="printProgress"></div>
+</button>
+</div>
+<script>
+    function switchPreview(mode) {
+      const thermalBtn = document.getElementById('thermalToggle');
+      const a4Btn = document.getElementById('a4Toggle');
+      const thermalView = document.getElementById('thermalView');
+      const a4View = document.getElementById('a4View');
+
+      if (mode === 'thermal') {
+        thermalBtn.classList.add('bg-surface-container-lowest', 'text-primary', 'shadow-sm');
+        a4Btn.classList.remove('bg-surface-container-lowest', 'text-primary', 'shadow-sm');
+        a4Btn.classList.add('text-on-surface-variant');
+        thermalView.classList.remove('hidden');
+        a4View.classList.add('hidden');
+      } else {
+        a4Btn.classList.add('bg-surface-container-lowest', 'text-primary', 'shadow-sm');
+        thermalBtn.classList.remove('bg-surface-container-lowest', 'text-primary', 'shadow-sm');
+        thermalBtn.classList.add('text-on-surface-variant');
+        a4View.classList.remove('hidden');
+        thermalView.classList.add('hidden');
+      }
+    }
+
+    function triggerPrintAnimation() {
+      const btn = document.getElementById('printBtn');
+      const text = document.getElementById('printText');
+      const icon = document.getElementById('printIcon');
+      const progress = document.getElementById('printProgress');
+
+      btn.classList.add('pointer-events-none');
+      text.innerText = 'Printing...';
+      icon.innerText = 'hourglass_bottom';
+      progress.style.width = '100%';
+
+      setTimeout(() => {
+        text.innerText = 'Success!';
+        icon.innerText = 'check_circle';
+        btn.classList.replace('bg-primary', 'bg-tertiary-container');
+        btn.classList.replace('text-on-primary', 'text-on-tertiary-container');
+        
+        setTimeout(() => {
+          text.innerText = 'Print Invoice';
+          icon.innerText = 'print';
+          btn.classList.replace('bg-tertiary-container', 'bg-primary');
+          btn.classList.replace('text-on-tertiary-container', 'text-on-primary');
+          progress.style.width = '0';
+          btn.classList.remove('pointer-events-none');
+        }, 2000);
+      }, 2000);
+    }
+  </script>
+</div></main></body></html>

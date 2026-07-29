@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PutulAutoParts</string>
+    <string name="title_activity_main">PutulAutoParts</string>
+    <string name="package_name">com.putul.autoparts.billing</string>
+    <string name="custom_url_scheme">com.putul.autoparts.billing</string>
+</resources>

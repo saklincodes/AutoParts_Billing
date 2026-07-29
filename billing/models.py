@@ -164,6 +164,8 @@ class StockAdjustment(models.Model):
         ('damage', 'Damage'),
         ('loss', 'Loss'),
         ('return', 'Return'),
+        ('restock', 'Restock'),
+        ('audit', 'Audit'),
         ('correction', 'Correction'),
         ('other', 'Other'),
     ]

@@ -244,7 +244,7 @@
       loadProducts();
 
       // Search functionality
-      const searchInput = document.querySelector('input[placeholder*="Search"]');
+      const searchInput = document.getElementById('productSearch');
       let searchTimer;
       searchInput.addEventListener('input', () => {
         clearTimeout(searchTimer);

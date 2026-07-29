@@ -580,13 +580,37 @@ var AppDB = (function () {
       return colors[Math.abs(hash) % colors.length];
     },
 
+    _getNav: function () {
+      return JSON.parse(localStorage.getItem('_nav') || '[]');
+    },
+    _setNav: function (s) {
+      localStorage.setItem('_nav', JSON.stringify(s));
+    },
+
+    pushHistory: function () {
+      var url = window.location.href;
+      var s = this._getNav();
+      if (s.length === 0 || s[s.length - 1] !== url) {
+        s.push(url);
+        this._setNav(s);
+      }
+    },
+
     initBackButton: function () {
+      this.pushHistory();
       if (typeof window.Capacitor !== 'undefined' && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-        window.Capacitor.Plugins.App.addListener('backButton', function (info) {
-          if (info.canGoBack) {
-            window.history.back();
+        var App = window.Capacitor.Plugins.App;
+        var self = this;
+        App.addListener('backButton', function () {
+          var s = self._getNav();
+          s.pop();
+          var prev = s.pop();
+          if (prev) {
+            self._setNav(s);
+            window.location.href = prev;
           } else {
-            window.Capacitor.Plugins.App.exitApp();
+            self._setNav([]);
+            App.exitApp();
           }
         });
       }

@@ -9,7 +9,7 @@
 <div class="flex flex-col gap-md">
 <div class="relative w-full">
 <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">search</span>
-<input class="w-full h-14 pl-xl pr-md bg-surface-container-low rounded-xl font-body-lg text-on-surface outline-none focus:bg-surface-container-high transition-colors" placeholder="Search name, mobile, or plate..." type="text"/>
+<input id="customerSearch" class="w-full h-14 pl-xl pr-md bg-surface-container-low rounded-xl font-body-lg text-on-surface outline-none focus:bg-surface-container-high transition-colors" placeholder="Search name, mobile, or plate..." type="text"/>
 <button class="absolute right-sm top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-primary">
 <span class="material-symbols-outlined">tune</span>
 </button>
@@ -57,7 +57,7 @@
 </button>
 </div>
 <script>
-  const API_BASE = 'http://localhost:8000/api';
+  const API_BASE = '/api';
   let allCustomers = [];
 
   function getInitials(name) {
@@ -133,7 +133,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     loadCustomers();
 
-    const searchInput = document.querySelector('input');
+    const searchInput = document.getElementById('customerSearch');
     let searchTimer;
     searchInput.addEventListener('input', (e) => {
       clearTimeout(searchTimer);

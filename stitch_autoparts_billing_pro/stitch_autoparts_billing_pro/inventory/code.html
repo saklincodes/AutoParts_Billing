@@ -11,7 +11,7 @@
 <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
 <span class="material-symbols-outlined text-on-surface-variant">search</span>
 </div>
-<input class="w-full h-12 pl-12 pr-4 bg-surface-container-low text-on-surface rounded-xl focus:outline-none focus:bg-surface-container-high transition-colors font-body-md" placeholder="Search spare parts, brands, or SKU..." type="text"/>
+<input id="productSearch" class="w-full h-12 pl-12 pr-4 bg-surface-container-low text-on-surface rounded-xl focus:outline-none focus:bg-surface-container-high transition-colors font-body-md" placeholder="Search spare parts, brands, or SKU..." type="text"/>
 </div>
 <div class="flex gap-sm overflow-x-auto pb-2 no-scrollbar">
 <button class="flex items-center gap-xs px-4 py-2 bg-primary text-on-primary rounded-full shrink-0 shadow-sm transition-transform active:scale-95">
@@ -149,7 +149,7 @@
 <span class="material-symbols-outlined text-[28px]">add</span>
 </button>
   <script>
-    const API_BASE = 'http://localhost:8000/api';
+    const API_BASE = '/api';
     let allProducts = [];
     let currentFilter = '';
 

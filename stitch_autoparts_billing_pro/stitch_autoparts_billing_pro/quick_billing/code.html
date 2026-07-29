@@ -68,7 +68,7 @@
 <div class="px-margin-mobile mb-lg">
 <div class="relative flex items-center">
 <span class="absolute left-4 material-symbols-outlined text-on-surface-variant">search</span>
-<input class="w-full h-14 pl-12 pr-4 bg-surface-container-low rounded-xl text-body-lg font-body-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search parts or VIN..." type="text"/>
+<input id="quickSearch" class="w-full h-14 pl-12 pr-4 bg-surface-container-low rounded-xl text-body-lg font-body-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search parts or VIN..." type="text"/>
 <span class="absolute right-4 material-symbols-outlined text-primary">barcode_scanner</span>
 </div>
 </div>
@@ -140,7 +140,7 @@
 <div class="fixed bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none z-[60]" id="toast-container"></div>
     <script>
         const API_BASE = '/api';
-        const searchInput = document.getElementById('search-input') || document.querySelector('input[type="text"]');
+        const searchInput = document.getElementById('quickSearch');
         const recentPartsContainer = document.querySelector('.flex.flex-col.gap-sm');
         let allProducts = [];
 

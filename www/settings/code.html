@@ -27,27 +27,27 @@
 <span class="font-label-lg text-label-lg text-primary uppercase tracking-wider">Business Profile</span>
 </div>
 <div class="bg-surface-container-low rounded-xl overflow-hidden shadow-sm">
-<button class="w-full flex items-center gap-md p-md hover:bg-surface-container-high transition-colors text-left">
+<button class="w-full flex items-center gap-md p-md hover:bg-surface-container-high transition-colors text-left" id="editShopName">
 <span class="material-symbols-outlined text-on-surface-variant">store</span>
 <div class="flex-1 min-w-0">
 <p class="font-label-lg text-label-lg text-on-surface">Store Name</p>
-<p class="font-body-md text-body-md text-on-surface-variant truncate">Elite Auto Parts &amp; Service Center</p>
+<p class="font-body-md text-body-md text-on-surface-variant truncate" id="shopNameDisplay">Elite Auto Parts</p>
 </div>
 <span class="material-symbols-outlined text-outline">chevron_right</span>
 </button>
-<button class="w-full flex items-center gap-md p-md hover:bg-surface-container-high transition-colors text-left">
+<button class="w-full flex items-center gap-md p-md hover:bg-surface-container-high transition-colors text-left" id="editAddress">
 <span class="material-symbols-outlined text-on-surface-variant">location_on</span>
 <div class="flex-1 min-w-0">
 <p class="font-label-lg text-label-lg text-on-surface">Address</p>
-<p class="font-body-md text-body-md text-on-surface-variant truncate">122 Industry Ave, Warehouse District</p>
+<p class="font-body-md text-body-md text-on-surface-variant truncate" id="addressDisplay">122 Industry Ave</p>
 </div>
 <span class="material-symbols-outlined text-outline">chevron_right</span>
 </button>
-<button class="w-full flex items-center gap-md p-md hover:bg-surface-container-high transition-colors text-left">
+<button class="w-full flex items-center gap-md p-md hover:bg-surface-container-high transition-colors text-left" id="editPhone">
 <span class="material-symbols-outlined text-on-surface-variant">call</span>
 <div class="flex-1 min-w-0">
 <p class="font-label-lg text-label-lg text-on-surface">Contact</p>
-<p class="font-body-md text-body-md text-on-surface-variant truncate">+1 (555) 012-3456</p>
+<p class="font-body-md text-body-md text-on-surface-variant truncate" id="phoneDisplay">+1 (555) 012-3456</p>
 </div>
 <span class="material-symbols-outlined text-outline">chevron_right</span>
 </button>
@@ -170,44 +170,71 @@
     </button>
 </div>
 <script>
-    // Simple micro-interactions for settings toggles
-    document.querySelectorAll('input[type="checkbox"]').forEach(toggle => {
-      toggle.addEventListener('change', function() {
-        const parent = this.closest('.flex-items-center');
-        if (this.checked) {
-          // Playful ripple effect or sound could go here
-          console.log('Setting Enabled');
-        }
-      });
-    });
+  const API_BASE = 'http://192.168.1.103:8000/api';
+  
+  async function loadSettings() {
+    try {
+      var r = await fetch(API_BASE + '/settings/');
+      var s = await r.json();
+      if (s.shop_name) document.getElementById('shopNameDisplay').textContent = s.shop_name;
+      if (s.address) document.getElementById('addressDisplay').textContent = s.address;
+      if (s.phone) document.getElementById('phoneDisplay').textContent = s.phone;
+    } catch(e) {}
+  }
+  loadSettings();
 
-    // Handle printer selection active state
-    const printerButtons = document.querySelectorAll('.bg-primary-container, .bg-surface-variant');
-    printerButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        printerButtons.forEach(b => {
-          b.classList.remove('bg-primary-container', 'text-on-primary-container');
-          b.classList.add('bg-surface-variant', 'text-on-surface-variant');
-          b.querySelector('span.material-symbols-outlined').style.fontVariationSettings = "'FILL' 0";
-        });
-        btn.classList.remove('bg-surface-variant', 'text-on-surface-variant');
-        btn.classList.add('bg-primary-container', 'text-on-primary-container');
-        btn.querySelector('span.material-symbols-outlined').style.fontVariationSettings = "'FILL' 1";
+  async function saveSetting(field, promptMsg, displayId) {
+    var val = prompt(promptMsg, document.getElementById(displayId).textContent);
+    if (!val) return;
+    try {
+      var body = {};
+      body[field] = val;
+      var r = await fetch(API_BASE + '/settings/', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
       });
-    });
-  </script>
-</div><script>
-document.addEventListener('DOMContentLoaded', () => {
-  // Navigation active state handler
-  const currentPath = 'settings';
-  document.querySelectorAll('nav a').forEach(link => {
-    if (link.getAttribute('data-path') === currentPath) {
-      link.classList.add('text-primary', 'font-bold');
-      link.classList.remove('text-on-surface-variant');
-    } else {
-      link.classList.remove('text-primary', 'font-bold');
-      link.classList.add('text-on-surface-variant');
-    }
+      if (r.ok) document.getElementById(displayId).textContent = val;
+    } catch(e) { alert('Failed to save'); }
+  }
+
+  document.getElementById('editShopName').addEventListener('click', function() {
+    saveSetting('shop_name', 'Enter store name:', 'shopNameDisplay');
   });
-});
-</script></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-between items-center h-16 px-2 max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="dashboard" href="#"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="billing" href="#"><span class="material-symbols-outlined">receipt_long</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Billing</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="inventory" href="#"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Stock</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="reports" href="#"><span class="material-symbols-outlined">bar_chart</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Reports</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-1/5 transition-colors text-primary font-bold" data-path="settings" href="#"><span class="material-symbols-outlined">settings</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Settings</span></a></div></nav></body></html>
+  document.getElementById('editAddress').addEventListener('click', function() {
+    saveSetting('address', 'Enter address:', 'addressDisplay');
+  });
+  document.getElementById('editPhone').addEventListener('click', function() {
+    saveSetting('phone', 'Enter phone:', 'phoneDisplay');
+  });
+
+  const darkToggle = document.getElementById('dark-mode-toggle');
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.documentElement.classList.add('dark');
+    if (darkToggle) darkToggle.checked = true;
+  }
+  if (darkToggle) {
+    darkToggle.addEventListener('change', function() {
+      if (this.checked) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('darkMode', 'true');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('darkMode', 'false');
+      }
+    });
+  }
+
+  const printerButtons = document.querySelectorAll('.bg-primary-container, .bg-surface-variant');
+  printerButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      printerButtons.forEach(function(b) {
+        b.classList.remove('bg-primary-container', 'text-on-primary-container');
+        b.classList.add('bg-surface-variant', 'text-on-surface-variant');
+      });
+      btn.classList.remove('bg-surface-variant', 'text-on-surface-variant');
+      btn.classList.add('bg-primary-container', 'text-on-primary-container');
+    });
+  });
+</script>
+</div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-between items-center h-16 px-2 max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="dashboard" href="http://192.168.1.103:8000/api/pages/dashboard/"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="billing" href="http://192.168.1.103:8000/api/pages/billing/"><span class="material-symbols-outlined">receipt_long</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Billing</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="inventory" href="http://192.168.1.103:8000/api/pages/inventory/"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Stock</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="reports" href="http://192.168.1.103:8000/api/pages/reports/"><span class="material-symbols-outlined">bar_chart</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Reports</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-1/5 transition-colors text-primary font-bold" data-path="settings" href="http://192.168.1.103:8000/api/pages/settings/"><span class="material-symbols-outlined">settings</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Settings</span></a></div></nav></body></html>

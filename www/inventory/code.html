@@ -11,7 +11,7 @@
 <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
 <span class="material-symbols-outlined text-on-surface-variant">search</span>
 </div>
-<input class="w-full h-12 pl-12 pr-4 bg-surface-container-low text-on-surface rounded-xl focus:outline-none focus:bg-surface-container-high transition-colors font-body-md" placeholder="Search spare parts, brands, or SKU..." type="text"/>
+<input id="productSearch" class="w-full h-12 pl-12 pr-4 bg-surface-container-low text-on-surface rounded-xl focus:outline-none focus:bg-surface-container-high transition-colors font-body-md" placeholder="Search spare parts, brands, or SKU..." type="text"/>
 </div>
 <div class="flex gap-sm overflow-x-auto pb-2 no-scrollbar">
 <button class="flex items-center gap-xs px-4 py-2 bg-primary text-on-primary rounded-full shrink-0 shadow-sm transition-transform active:scale-95">
@@ -145,9 +145,14 @@
 </div>
 </div>
 <!-- Floating Action Button -->
-<button class="fixed bottom-20 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40" id="add-product-fab">
+<div class="fixed bottom-20 right-6 flex flex-col gap-3 z-40" id="fab-group">
+<a class="w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all" href="http://192.168.1.103:8000/api/pages/add-product/">
 <span class="material-symbols-outlined text-[28px]">add</span>
-</button>
+</a>
+<a class="w-14 h-14 bg-secondary-container text-on-secondary-container rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all" href="http://192.168.1.103:8000/api/pages/stock-adjustment/">
+<span class="material-symbols-outlined text-[28px]">swap_vert</span>
+</a>
+</div>
   <script>
     const API_BASE = 'http://192.168.1.103:8000/api';
     let allProducts = [];
@@ -178,7 +183,7 @@
     function renderProducts(products) {
       const container = document.querySelector('.flex.flex-col.gap-md');
       if (!container) return;
-      const fab = document.getElementById('add-product-fab');
+      const fab = document.getElementById('fab-group');
       const emptyEnd = container.querySelector('.opacity-40');
 
       const productHtml = products.map(p => {
@@ -244,7 +249,7 @@
       loadProducts();
 
       // Search functionality
-      const searchInput = document.querySelector('input[placeholder*="Search"]');
+      const searchInput = document.getElementById('productSearch');
       let searchTimer;
       searchInput.addEventListener('input', () => {
         clearTimeout(searchTimer);
@@ -277,7 +282,7 @@
       });
 
       // FAB animation
-      const fab = document.getElementById('add-product-fab');
+      const fab = document.getElementById('fab-group');
       fab.animate([
         { transform: 'scale(1)', boxShadow: '0 10px 25px -5px rgba(0, 6, 102, 0.4)' },
         { transform: 'scale(1.1)', boxShadow: '0 15px 30px -5px rgba(0, 6, 102, 0.6)' },
@@ -285,4 +290,4 @@
       ], { duration: 1000, iterations: 2, easing: 'ease-in-out' });
     });
   </script>
-</div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-between items-center h-16 px-2 max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="dashboard" href="/api/pages/dashboard/"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="billing" href="/api/pages/billing/"><span class="material-symbols-outlined">receipt_long</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Billing</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-1/5 transition-colors text-primary font-bold" data-path="inventory" href="/api/pages/inventory/"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Stock</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="reports" href="#"><span class="material-symbols-outlined">bar_chart</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Reports</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined">settings</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Settings</span></a></div></nav></body></html>
+</div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-between items-center h-16 px-2 max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="dashboard" href="http://192.168.1.103:8000/api/pages/dashboard/"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="billing" href="http://192.168.1.103:8000/api/pages/billing/"><span class="material-symbols-outlined">receipt_long</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Billing</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-1/5 transition-colors text-primary font-bold" data-path="inventory" href="http://192.168.1.103:8000/api/pages/inventory/"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Stock</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" href="http://192.168.1.103:8000/api/pages/reports/"><span class="material-symbols-outlined">bar_chart</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Reports</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" href="http://192.168.1.103:8000/api/pages/settings/"><span class="material-symbols-outlined">settings</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Settings</span></a></div></nav></body></html>

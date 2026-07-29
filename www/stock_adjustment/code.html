@@ -187,70 +187,129 @@
 <button class="flex-[2] h-14 rounded-xl font-label-lg text-on-primary bg-primary shadow-lg shadow-primary/20 active:scale-95 transition-transform" onclick="saveAdjustment()">Complete Adjustment</button>
 </div>
 </div>
-<script>
-    let currentQty = 0;
-    const baseStock = 42;
+    <script>
+        const API_BASE = 'http://192.168.1.103:8000/api';
+        let currentQty = 0;
+        let selectedProductId = null;
+        let selectedProductStock = 0;
+        let selectedType = null;
+        let allProducts = [];
+        let adjustments = [];
 
-    function toggleSheet(show) {
-      const sheet = document.getElementById('adjustmentSheet');
-      if (show) {
-        sheet.classList.remove('translate-y-full');
-      } else {
-        sheet.classList.add('translate-y-full');
-        resetForm();
-      }
-    }
+        async function loadAdjustments() {
+            try {
+                var res = await fetch(API_BASE + '/stock-adjustments/');
+                adjustments = await res.json();
+                renderAdjustments();
+            } catch(e) { console.warn('API not reachable'); }
+        }
 
-    function adjustQty(delta) {
-      currentQty += delta;
-      document.getElementById('qtyValue').innerText = currentQty;
-      const newTotal = baseStock + currentQty;
-      document.getElementById('newStockLabel').innerText = `${newTotal} Units`;
-      
-      // Visual feedback for direction
-      const label = document.getElementById('newStockLabel');
-      if (currentQty > 0) label.className = "text-headline-md font-headline-md text-primary";
-      else if (currentQty < 0) label.className = "text-headline-md font-headline-md text-error";
-      else label.className = "text-headline-md font-headline-md text-on-surface";
-    }
+        async function loadProducts() {
+            try {
+                var res = await fetch(API_BASE + '/products/search_min/');
+                allProducts = await res.json();
+            } catch(e) {}
+        }
 
-    function selectType(el, type) {
-      document.querySelectorAll('.type-btn').forEach(btn => {
-        btn.classList.remove('bg-primary-container', 'text-on-primary-container');
-        btn.classList.add('bg-surface-container-high', 'text-on-surface');
-      });
-      el.classList.remove('bg-surface-container-high', 'text-on-surface');
-      el.classList.add('bg-secondary-container', 'text-on-secondary-container');
-    }
+        function renderAdjustments() {
+            var list = document.getElementById('adjustmentList');
+            if (adjustments.length === 0) {
+                list.innerHTML = '<div class="text-center py-8 text-on-surface-variant">No adjustments yet</div>';
+                return;
+            }
+            list.innerHTML = adjustments.slice(0, 10).map(function(a) {
+                var cls = a.reason === 'damage' || a.reason === 'loss' ? 'bg-error-container text-on-error-container' : 'bg-secondary-container text-on-secondary-container';
+                var sign = a.quantity_change > 0 ? 'text-primary' : 'text-error';
+                return '<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm flex items-center gap-md"><div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center"><span class="material-symbols-outlined text-outline">inventory_2</span></div><div class="flex-1 min-w-0"><h4 class="text-body-lg font-label-lg text-on-surface truncate">' + (a.product_name || 'Unknown') + '</h4><p class="text-label-md font-label-md text-on-surface-variant">' + (a.notes || '') + '</p></div><div class="flex flex-col items-end gap-xs"><span class="px-2 py-0.5 rounded-full text-label-md font-label-md ' + cls + '">' + a.reason + '</span><span class="' + sign + ' font-title-lg">' + (a.quantity_change > 0 ? '+' : '') + a.quantity_change + '</span></div></div>';
+            }).join('');
+        }
 
-    function saveAdjustment() {
-      // Logic for saving...
-      toggleSheet(false);
-      // Toast notification or feedback here
-    }
+        function toggleSheet(show) {
+            document.getElementById('adjustmentSheet').classList.toggle('translate-y-full', !show);
+            if (!show) resetForm();
+        }
 
-    function resetForm() {
-      currentQty = 0;
-      document.getElementById('qtyValue').innerText = '0';
-      document.getElementById('newStockLabel').innerText = '42 Units';
-      document.querySelectorAll('.type-btn').forEach(btn => {
-        btn.classList.remove('bg-secondary-container', 'text-on-secondary-container');
-        btn.classList.add('bg-surface-container-high', 'text-on-surface');
-      });
-    }
+        function openProductPicker() {
+            var names = allProducts.map(function(p) { return p.id + ':' + p.name + ':' + p.stock_qty; }).join('|');
+            var choice = prompt('Enter product ID or name:\n' + allProducts.map(function(p) { return p.id + '. ' + p.name + ' (Stock: ' + p.stock_qty + ')'; }).join('\n'));
+            if (!choice) return;
+            var p = allProducts.find(function(x) { return x.id == choice || x.name.toLowerCase().includes(choice.toLowerCase()); });
+            if (p) {
+                selectedProductId = p.id;
+                selectedProductStock = p.stock_qty;
+                document.querySelector('#adjustmentSheet .flex-1 p').textContent = p.name + ' (Stock: ' + p.stock_qty + ')';
+                document.getElementById('newStockLabel').textContent = p.stock_qty + ' Units';
+                document.getElementById('qtyValue').textContent = '0';
+            }
+        }
 
-    // Micro-interaction: List item stagger
-    document.addEventListener('DOMContentLoaded', () => {
-      const items = document.querySelectorAll('#adjustmentList > div');
-      items.forEach((item, index) => {
-        item.style.opacity = '0';
-        item.style.transform = 'translateY(10px)';
-        setTimeout(() => {
-          item.style.transition = 'all 0.4s ease-out';
-          item.style.opacity = '1';
-          item.style.transform = 'translateY(0)';
-        }, index * 100);
-      });
-    });
-  </script>
-</div><div class="h-20 pb-safe"></div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/80 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold"><div class="flex items-center justify-around h-16 px-base"><a class="flex flex-col items-center justify-center flex-1 h-full gap-xs text-on-surface-variant rounded-xl transition-all duration-200" data-path="dashboard" href="#"><span class="material-symbols-outlined">dashboard</span><span class="text-label-md font-label-md">Dashboard</span></a><a class="flex flex-col items-center justify-center flex-1 h-full gap-xs text-on-surface-variant rounded-xl transition-all duration-200" data-path="billing" href="#"><span class="material-symbols-outlined">receipt_long</span><span class="text-label-md font-label-md">Billing</span></a><a aria-current="page" class="flex flex-col items-center justify-center flex-1 h-full gap-xs rounded-xl transition-all duration-200 bg-secondary-container text-on-secondary-container font-semibold" data-path="stock" href="#"><span class="material-symbols-outlined">inventory_2</span><span class="text-label-md font-label-md">Stock</span></a><a class="flex flex-col items-center justify-center flex-1 h-full gap-xs text-on-surface-variant rounded-xl transition-all duration-200" data-path="reports" href="#"><span class="material-symbols-outlined">analytics</span><span class="text-label-md font-label-md">Reports</span></a><a class="flex flex-col items-center justify-center flex-1 h-full gap-xs text-on-surface-variant rounded-xl transition-all duration-200" data-path="settings" href="#"><span class="material-symbols-outlined">settings</span><span class="text-label-md font-label-md">Settings</span></a></div></nav></body></html>
+        function adjustQty(delta) {
+            currentQty += delta;
+            document.getElementById('qtyValue').innerText = currentQty;
+            var newTotal = selectedProductStock + currentQty;
+            document.getElementById('newStockLabel').innerText = newTotal + ' Units';
+            var label = document.getElementById('newStockLabel');
+            if (currentQty > 0) label.className = "text-headline-md font-headline-md text-primary";
+            else if (currentQty < 0) label.className = "text-headline-md font-headline-md text-error";
+            else label.className = "text-headline-md font-headline-md text-on-surface";
+        }
+
+        function selectType(el, type) {
+            selectedType = type;
+            document.querySelectorAll('.type-btn').forEach(function(btn) {
+                btn.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+                btn.classList.add('bg-surface-container-high', 'text-on-surface');
+            });
+            el.classList.remove('bg-surface-container-high', 'text-on-surface');
+            el.classList.add('bg-secondary-container', 'text-on-secondary-container');
+        }
+
+        async function saveAdjustment() {
+            if (!selectedProductId || !selectedType || currentQty === 0) { alert('Select product, type, and quantity'); return; }
+            var notes = document.querySelector('textarea').value;
+            try {
+                var res = await fetch(API_BASE + '/stock-adjustments/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({product: selectedProductId, quantity_change: currentQty, reason: selectedType, notes: notes})
+                });
+                if (res.ok) {
+                    toggleSheet(false);
+                    loadAdjustments();
+                } else { alert('Failed to save'); }
+            } catch(e) { alert('Server error'); }
+        }
+
+        function resetForm() {
+            currentQty = 0;
+            selectedProductId = null;
+            selectedProductStock = 0;
+            selectedType = null;
+            document.getElementById('qtyValue').innerText = '0';
+            document.getElementById('newStockLabel').innerText = '0 Units';
+            document.querySelector('#adjustmentSheet .flex-1 p').textContent = 'Select Product...';
+            document.querySelector('textarea').value = '';
+            document.querySelectorAll('.type-btn').forEach(function(btn) {
+                btn.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+                btn.classList.add('bg-surface-container-high', 'text-on-surface');
+            });
+        }
+
+        document.querySelector('#adjustmentSheet .bg-surface-container-high.p-md').addEventListener('click', openProductPicker);
+        loadProducts();
+        loadAdjustments();
+
+        document.getElementById('stockSearch').addEventListener('input', function() {
+            var q = this.value.toLowerCase().trim();
+            if (q.length < 1) { loadAdjustments(); return; }
+            var filtered = adjustments.filter(function(a) { return (a.product_name || '').toLowerCase().includes(q); });
+            var list = document.getElementById('adjustmentList');
+            if (filtered.length === 0) { list.innerHTML = '<div class="text-center py-8 text-on-surface-variant">No results</div>'; return; }
+            list.innerHTML = filtered.map(function(a) {
+                var cls = a.reason === 'damage' || a.reason === 'loss' ? 'bg-error-container text-on-error-container' : 'bg-secondary-container text-on-secondary-container';
+                var sign = a.quantity_change > 0 ? 'text-primary' : 'text-error';
+                return '<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm flex items-center gap-md"><div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center"><span class="material-symbols-outlined text-outline">inventory_2</span></div><div class="flex-1 min-w-0"><h4 class="text-body-lg font-label-lg text-on-surface truncate">' + (a.product_name || '') + '</h4><p class="text-label-md font-label-md text-on-surface-variant">' + (a.notes || '') + '</p></div><div class="flex flex-col items-end gap-xs"><span class="px-2 py-0.5 rounded-full text-label-md font-label-md ' + cls + '">' + a.reason + '</span><span class="' + sign + ' font-title-lg">' + (a.quantity_change > 0 ? '+' : '') + a.quantity_change + '</span></div></div>';
+            }).join('');
+        });
+    </script>
+</div><div class="h-20 pb-safe"></div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/80 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center justify-around h-16 px-base"><a class="flex flex-col items-center justify-center flex-1 h-full gap-xs text-on-surface-variant rounded-xl transition-all duration-200" href="http://192.168.1.103:8000/api/pages/dashboard/"><span class="material-symbols-outlined">dashboard</span><span class="text-label-md font-label-md">Dashboard</span></a><a class="flex flex-col items-center justify-center flex-1 h-full gap-xs text-on-surface-variant rounded-xl transition-all duration-200" href="http://192.168.1.103:8000/api/pages/billing/"><span class="material-symbols-outlined">receipt_long</span><span class="text-label-md font-label-md">Billing</span></a><a aria-current="page" class="flex flex-col items-center justify-center flex-1 h-full gap-xs rounded-xl transition-all duration-200 bg-secondary-container text-on-secondary-container font-semibold" href="http://192.168.1.103:8000/api/pages/stock-adjustment/"><span class="material-symbols-outlined">inventory_2</span><span class="text-label-md font-label-md">Stock</span></a><a class="flex flex-col items-center justify-center flex-1 h-full gap-xs text-on-surface-variant rounded-xl transition-all duration-200" href="http://192.168.1.103:8000/api/pages/reports/"><span class="material-symbols-outlined">analytics</span><span class="text-label-md font-label-md">Reports</span></a><a class="flex flex-col items-center justify-center flex-1 h-full gap-xs text-on-surface-variant rounded-xl transition-all duration-200" href="http://192.168.1.103:8000/api/pages/settings/"><span class="material-symbols-outlined">settings</span><span class="text-label-md font-label-md">Settings</span></a></div></nav></body></html>

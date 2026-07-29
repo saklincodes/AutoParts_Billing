@@ -68,7 +68,7 @@
 <div class="px-margin-mobile mb-lg">
 <div class="relative flex items-center">
 <span class="absolute left-4 material-symbols-outlined text-on-surface-variant">search</span>
-<input class="w-full h-14 pl-12 pr-4 bg-surface-container-low rounded-xl text-body-lg font-body-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search parts or VIN..." type="text"/>
+<input id="quickSearch" class="w-full h-14 pl-12 pr-4 bg-surface-container-low rounded-xl text-body-lg font-body-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search parts or VIN..." type="text"/>
 <span class="absolute right-4 material-symbols-outlined text-primary">barcode_scanner</span>
 </div>
 </div>
@@ -138,49 +138,74 @@
 </div>
 <!-- Floating Feedback Toast Area (for the scripts) -->
 <div class="fixed bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none z-[60]" id="toast-container"></div>
-<script>
-        // Micro-interaction: Quick Action Feedback
-        const buttons = {
-            'reprint-btn': 'Last invoice sent to printer...',
-            'draft-btn': 'Work order saved to drafts'
-        };
+    <script>
+        const API_BASE = 'http://192.168.1.103:8000/api';
+        const searchInput = document.getElementById('quickSearch');
+        const recentPartsContainer = document.querySelector('.flex.flex-col.gap-sm');
+        let allProducts = [];
 
-        Object.entries(buttons).forEach(([id, message]) => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.addEventListener('click', () => {
-                    showToast(message);
-                    // Add a little haptic-like animation
-                    el.classList.add('scale-90');
-                    setTimeout(() => el.classList.remove('scale-90'), 100);
-                });
-            }
-        });
-
-        function showToast(text) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'mb-sm px-lg py-sm bg-inverse-surface text-inverse-on-surface rounded-full text-label-md font-label-md shadow-xl animate-bounce opacity-0 transition-opacity duration-300';
-            toast.innerText = text;
-            
-            container.appendChild(toast);
-            
-            // Trigger animation
-            setTimeout(() => toast.classList.remove('opacity-0'), 10);
-            
-            // Remove after 3 seconds
-            setTimeout(() => {
-                toast.classList.add('opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 2500);
+        async function loadProducts() {
+            try {
+                const res = await fetch(API_BASE + '/products/search_min/');
+                allProducts = await res.json();
+                renderRecentParts();
+            } catch (e) { console.warn('API not reachable'); }
         }
 
-        // Horizontal Scroll Mouse Wheel Support for desktop previews
-        const scrollContainer = document.querySelector('.overflow-x-auto');
-        scrollContainer.addEventListener('wheel', (evt) => {
-            evt.preventDefault();
-            scrollContainer.scrollLeft += evt.deltaY;
-        });
+        function renderRecentParts() {
+            if (!recentPartsContainer || allProducts.length === 0) return;
+            const items = allProducts.slice(0, 5).map(function(p) {
+                return '<div class="p-md bg-surface-container-lowest rounded-xl flex items-center gap-md shadow-sm active:bg-surface-container transition-colors cursor-pointer group" onclick="quickAdd(' + p.id + ',\'' + p.name.replace(/'/g, "\\'") + '\',' + p.price + ')"><div class="w-12 h-12 rounded-lg bg-background flex items-center justify-center"><span class="material-symbols-outlined text-outline text-[28px]">inventory_2</span></div><div class="flex-1 min-w-0"><div class="flex justify-between items-start"><p class="font-label-lg text-label-lg text-on-background truncate">' + p.name + '</p><span class="font-label-md text-label-md text-primary">\u20b9' + Number(p.price).toFixed(2) + '</span></div><p class="font-label-md text-label-md text-on-surface-variant truncate">SKU: ' + p.sku + ' \u2022 ' + p.stock_qty + ' in stock</p></div><span class="material-symbols-outlined text-primary">add_circle</span></div>';
+            }).join('');
+            recentPartsContainer.innerHTML = items;
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                var q = this.value.toLowerCase().trim();
+                if (q.length < 1) { renderRecentParts(); return; }
+                var matches = allProducts.filter(function(p) { return p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q); }).slice(0, 5);
+                if (matches.length === 0) { recentPartsContainer.innerHTML = '<div class="text-center py-8 text-on-surface-variant">No results found</div>'; return; }
+                recentPartsContainer.innerHTML = matches.map(function(p) {
+                    return '<div class="p-md bg-surface-container-lowest rounded-xl flex items-center gap-md shadow-sm active:bg-surface-container transition-colors cursor-pointer group" onclick="quickAdd(' + p.id + ',\'' + p.name.replace(/'/g, "\\'") + '\',' + p.price + ')"><div class="w-12 h-12 rounded-lg bg-background flex items-center justify-center"><span class="material-symbols-outlined text-outline text-[28px]">inventory_2</span></div><div class="flex-1 min-w-0"><div class="flex justify-between items-start"><p class="font-label-lg text-label-lg text-on-background truncate">' + p.name + '</p><span class="font-label-md text-label-md text-primary">\u20b9' + Number(p.price).toFixed(2) + '</span></div><p class="font-label-md text-label-md text-on-surface-variant truncate">SKU: ' + p.sku + ' \u2022 ' + p.stock_qty + ' in stock</p></div><span class="material-symbols-outlined text-primary">add_circle</span></div>';
+                }).join('');
+            });
+        }
+
+        var quickCart = [];
+        function quickAdd(pid, name, price) {
+            var existing = quickCart.find(function(i) { return i.pid === pid; });
+            if (existing) { existing.qty++; }
+            else { quickCart.push({pid: pid, name: name, price: price, qty: 1}); }
+            showToast('Added: ' + name);
+        }
+
+        loadProducts();
+
+        document.getElementById('reprint-btn').addEventListener('click', function() { showToast('Creating invoice...'); createQuickInvoice(); });
+        document.getElementById('draft-btn').addEventListener('click', function() { showToast('Work order saved to drafts'); });
+
+        async function createQuickInvoice() {
+            if (quickCart.length === 0) { showToast('Cart is empty!'); return; }
+            var items = quickCart.map(function(i) { return {product_id: i.pid, quantity: i.qty, unit_price: i.price}; });
+            try {
+                var res = await fetch(API_BASE + '/invoices/', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({items: items, discount: 0, tax: 0})
+                });
+                var data = await res.json();
+                if (res.ok) {
+                    showToast('Invoice ' + data.invoice_no + ' created!');
+                    quickCart = [];
+                    setTimeout(function() { window.location.href = '/api/pages/invoice-preview/' + data.id + '/'; }, 1000);
+                } else { showToast('Error creating invoice'); }
+            } catch (e) { showToast('Server not reachable'); }
+        }
+
+        var scrollContainer = document.querySelector('.overflow-x-auto');
+        if (scrollContainer) {
+            scrollContainer.addEventListener('wheel', function(evt) { evt.preventDefault(); scrollContainer.scrollLeft += evt.deltaY; });
+        }
     </script>
 </div><style>
     /* Custom utility for hiding scrollbars but keeping functionality */
@@ -191,4 +216,4 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
-</style></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/80 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-around items-center h-16"><a class="flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" data-path="dashboard" href="#"><span class="material-symbols-outlined">dashboard</span><span class="font-label-md text-label-md">Home</span></a><a class="flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" data-path="owners" href="#"><span class="material-symbols-outlined">group</span><span class="font-label-md text-label-md">Owners</span></a><a class="flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" data-path="vehicles" href="#"><span class="material-symbols-outlined">directions_car</span><span class="font-label-md text-label-md">Vehicles</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-xs transition-colors text-primary font-bold" data-path="billing" href="#"><span class="material-symbols-outlined">receipt_long</span><span class="font-label-md text-label-md">Billing</span></a></div></nav></body></html>
+</style></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/80 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]"><div class="flex justify-around items-center h-16"><a class="flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" href="http://192.168.1.103:8000/api/pages/dashboard/"><span class="material-symbols-outlined">dashboard</span><span class="font-label-md text-label-md">Home</span></a><a class="flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" href="http://192.168.1.103:8000/api/pages/customers/"><span class="material-symbols-outlined">group</span><span class="font-label-md text-label-md">Customers</span></a><a class="flex flex-col items-center justify-center gap-xs text-on-surface-variant hover:text-primary transition-colors" href="http://192.168.1.103:8000/api/pages/inventory/"><span class="material-symbols-outlined">inventory_2</span><span class="font-label-md text-label-md">Stock</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-xs transition-colors text-primary font-bold" href="http://192.168.1.103:8000/api/pages/billing/"><span class="material-symbols-outlined">receipt_long</span><span class="font-label-md text-label-md">Billing</span></a></div></nav></body></html>

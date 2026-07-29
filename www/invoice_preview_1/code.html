@@ -5,6 +5,7 @@
     }
   </style>
   </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-4 flex items-center gap-sm"><button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors" onclick="history.back()"><span class="material-symbols-outlined">arrow_back</span></button><div class="flex-1 flex items-center gap-sm overflow-hidden"><img alt="Logo" class="h-6 w-auto shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB-vfM_j8m0mnYqv-qrArJJYEZNCL75-aiphhaJQcoQVPoC3A76ANpHOPkyRLHYpekHZBe_YIcReDkTz21Qo27OWejspTfOy-OHBzifZoE8ZurJBpVWdgdm88C8pQB1JL3p7D-fCJFUAWcjR1Quvl2pK-MLA5cS1I4SVY9z1idflECdBvq_0vFDdkKAgQNDvUlSWumftxN0UTTSsPHXrPahAHCvSDX_Y343vXIR0Z-uCQUP_psnDU0JiHQBDnvyGhUjAAiv51tzQE"/><h1 class="font-title-lg text-title-lg text-on-surface truncate">Invoice Preview</h1></div></div></header><main class="flex-1 relative w-full pt-16 bg-surface px-margin-mobile pb-safe"><div class="flex flex-col w-full pb-xl">
+{{ invoice_id|json_script:"invoiceId" }}
 <!-- Invoice Preview Container -->
 <div class="bg-surface-container-lowest shadow-xl rounded-xl overflow-hidden mx-auto w-full max-w-2xl relative">
 <!-- Action Toolbar (Sticky top of the preview) -->
@@ -14,11 +15,9 @@
 <span class="material-symbols-outlined text-[20px]">print</span>
 <span>Print</span>
 </button>
-<button class="flex items-center justify-center w-10 h-10 bg-secondary-container text-on-secondary-container rounded-full hover:bg-secondary-fixed transition-colors">
-<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
-</button>
+
 </div>
-<button class="flex items-center gap-xs px-md py-sm bg-surface-variant text-on-surface-variant rounded-full font-label-lg active:bg-outline-variant transition-colors">
+<button class="flex items-center gap-xs px-md py-sm bg-surface-variant text-on-surface-variant rounded-full font-label-lg active:bg-outline-variant transition-colors" id="shareBtn">
 <span class="material-symbols-outlined text-[20px]">share</span>
 <span>Share</span>
 </button>
@@ -30,34 +29,24 @@
 <div class="w-16 h-16 bg-primary-container rounded-xl flex items-center justify-center mb-sm">
 <span class="material-symbols-outlined text-on-primary-container text-[40px]" style="font-variation-settings: 'FILL' 1;">precision_manufacturing</span>
 </div>
-<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">PUTUL AUTO PARTS AND AUTOSCAN</h2>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight" id="shopName">PUTUL AUTO PARTS AND AUTOSCAN</h2>
 <div class="flex flex-col gap-xs text-on-surface-variant font-body-md">
-<p class="flex items-center justify-center gap-xs">
-<span class="material-symbols-outlined text-[16px]">location_on</span>
-                        123 Mechanics Row, Industrial Estate, Kolkata - 700001
-                    </p>
-<p class="flex items-center justify-center gap-xs font-label-lg">
-<span class="material-symbols-outlined text-[16px]">call</span>
-                        +91 98765 43210 | +91 33 2455 0000
-                    </p>
-<p class="flex items-center justify-center gap-xs">
-<span class="material-symbols-outlined text-[16px]">mail</span>
-                        contact@putulauto.com
-                    </p>
+<p class="flex items-center justify-center gap-xs"><span class="material-symbols-outlined text-[16px]">location_on</span> <span id="shopAddress">123 Mechanics Row, Kolkata</span></p>
+<p class="flex items-center justify-center gap-xs font-label-lg"><span class="material-symbols-outlined text-[16px]">call</span> <span id="shopPhone">+91 98765 43210</span></p>
+<p class="flex items-center justify-center gap-xs"><span class="material-symbols-outlined text-[16px]">mail</span> <span id="shopEmail">contact@putulauto.com</span></p>
 </div>
 </div>
 <div class="h-px bg-surface-variant w-full"></div>
-<!-- Metadata -->
 <div class="grid grid-cols-2 gap-md">
 <div class="flex flex-col gap-xs">
 <span class="text-on-surface-variant font-label-md uppercase tracking-wider">Invoice To</span>
-<p class="font-title-lg text-on-surface">Rajesh Kumar</p>
-<p class="text-body-md text-on-surface-variant">WB-02-AF-9988 (Maruti Swift)</p>
+<p class="font-title-lg text-on-surface" id="customerName">-</p>
+<p class="text-body-md text-on-surface-variant" id="customerVehicle">-</p>
 </div>
 <div class="flex flex-col gap-xs text-right">
 <span class="text-on-surface-variant font-label-md uppercase tracking-wider">Details</span>
-<p class="font-label-lg text-on-surface">INV-2023-8842</p>
-<p class="text-body-md text-on-surface-variant">Oct 24, 2023 • 02:45 PM</p>
+<p class="font-label-lg text-on-surface" id="invoiceNo">-</p>
+<p class="text-body-md text-on-surface-variant" id="invoiceDate">-</p>
 </div>
 </div>
 <!-- Table -->
@@ -68,61 +57,28 @@
 <div class="col-span-2 text-center">Qty</div>
 <div class="col-span-4 text-right">Amount</div>
 </div>
-<!-- Table Rows -->
-<div class="flex flex-col">
-<div class="grid grid-cols-12 py-md px-md items-start">
-<div class="col-span-6 flex flex-col">
-<span class="font-label-lg text-on-surface">Synthetic Engine Oil (5L)</span>
-<span class="text-label-md text-on-surface-variant">Castrol Edge 5W-40 Premium</span>
-</div>
-<div class="col-span-2 text-center font-body-md text-on-surface">1</div>
-<div class="col-span-4 text-right font-label-lg text-on-surface">₹3,450.00</div>
-</div>
-<div class="grid grid-cols-12 py-md px-md items-start bg-surface-container-low/30">
-<div class="col-span-6 flex flex-col">
-<span class="font-label-lg text-on-surface">Oil Filter</span>
-<span class="text-label-md text-on-surface-variant">OEM Grade Replacement</span>
-</div>
-<div class="col-span-2 text-center font-body-md text-on-surface">1</div>
-<div class="col-span-4 text-right font-label-lg text-on-surface">₹450.00</div>
-</div>
-<div class="grid grid-cols-12 py-md px-md items-start">
-<div class="col-span-6 flex flex-col">
-<span class="font-label-lg text-on-surface">Brake Pad Set (Front)</span>
-<span class="text-label-md text-on-surface-variant">Ceramic High Performance</span>
-</div>
-<div class="col-span-2 text-center font-body-md text-on-surface">2</div>
-<div class="col-span-4 text-right font-label-lg text-on-surface">₹2,800.00</div>
-</div>
-<div class="grid grid-cols-12 py-md px-md items-start bg-surface-container-low/30">
-<div class="col-span-6 flex flex-col">
-<span class="font-label-lg text-on-surface">Labor Charges</span>
-<span class="text-label-md text-on-surface-variant">General Service &amp; Scanning</span>
-</div>
-<div class="col-span-2 text-center font-body-md text-on-surface">1</div>
-<div class="col-span-4 text-right font-label-lg text-on-surface">₹1,200.00</div>
-</div>
-</div>
-<!-- Totals Section -->
+<div class="flex flex-col" id="invoiceItems"></div>
 <div class="mt-lg flex flex-col items-end gap-sm px-md">
 <div class="flex justify-between w-full max-w-[200px] text-on-surface-variant font-body-md">
 <span>Subtotal:</span>
-<span>₹7,900.00</span>
+<span id="subtotal">₹0.00</span>
 </div>
 <div class="flex justify-between w-full max-w-[200px] text-on-surface-variant font-body-md">
-<span>GST (18%):</span>
-<span>₹1,422.00</span>
+<span>Discount:</span>
+<span id="discount">₹0.00</span>
+</div>
+<div class="flex justify-between w-full max-w-[200px] text-on-surface-variant font-body-md">
+<span>Tax:</span>
+<span id="tax">₹0.00</span>
 </div>
 <div class="h-px bg-outline-variant w-full max-w-[200px] my-xs"></div>
 <div class="flex justify-between w-full max-w-[240px] text-primary font-headline-sm">
 <span>Total:</span>
-<span>₹9,322.00</span>
+<span id="total">₹0.00</span>
 </div>
 </div>
 </div>
-<!-- Footer Message -->
 <div class="mt-xl flex flex-col items-center gap-md pt-lg relative">
-<!-- Decorative border top -->
 <div class="absolute top-0 inset-x-0 h-4 flex justify-center overflow-hidden pointer-events-none opacity-20">
 <div class="w-full flex gap-1">
 <div class="h-1 w-full bg-primary/20 rounded-full"></div>
@@ -132,62 +88,72 @@
 </div>
 <div class="text-center">
 <p class="font-title-lg text-on-surface">Thank You for Your Business!</p>
-<p class="text-body-md text-on-surface-variant mt-xs">Drive safe. Please come again for your next 5,000km service.</p>
-</div>
-<div class="flex flex-col items-center gap-xs">
-<div class="w-32 h-32 bg-surface-container flex items-center justify-center rounded-lg">
-<!-- Simplified QR for Visual Context -->
-<svg class="w-24 h-24 text-on-surface opacity-80" fill="currentColor" viewbox="0 0 24 24">
-<path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h3v2h-3v-2zm-3 0h2v2h-2v-2zm3 3h3v2h-3v-2zm-3 0h2v2h-2v-2zm3 3h3v2h-3v-2zm-3 0h2v2h-2v-2zm-3-6h2v2h-2v-2zm0 3h2v2h-2v-2zm0 3h2v2h-2v-2z"></path>
-</svg>
-</div>
-<span class="text-label-md text-on-surface-variant">Scan to Pay or Feedback</span>
+<p class="text-body-md text-on-surface-variant mt-xs" id="footerMsg">Drive safe. Please come again.</p>
 </div>
 <div class="text-center italic text-label-md text-on-surface-variant/60">
-                    This is a computer generated invoice. No signature required.
-                </div>
+This is a computer generated invoice. No signature required.
 </div>
 </div>
-<!-- Thermal Print Indicator (Design Detail) -->
-<div class="p-md bg-secondary-container/20 flex items-center justify-center gap-sm">
-<span class="material-symbols-outlined text-secondary text-[18px]">info</span>
-<span class="text-label-md text-on-secondary-container">Optimized for 80mm Thermal &amp; A4 Printing</span>
 </div>
 </div>
-<!-- Empty State / Delight Moment -->
-<div class="mt-xl flex flex-col items-center text-center opacity-40">
+<div class="mt-xl flex flex-col items-center text-center opacity-40" id="loadingIndicator">
 <div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center mb-sm">
-<span class="material-symbols-outlined">auto_awesome</span>
+<span class="material-symbols-outlined">hourglass_top</span>
 </div>
-<p class="font-label-md text-on-surface-variant max-w-[200px]">Review the details above before finalizing the checkout.</p>
+<p class="font-label-md text-on-surface-variant max-w-[200px]">Loading invoice...</p>
 </div>
 </div>
 <script>
-    // Simple micro-interaction for share button
-    document.querySelector('button:has(.material-symbols-outlined:contains("share"))').addEventListener('click', () => {
-        if (navigator.share) {
-            navigator.share({
-                title: 'Invoice from Putul Auto',
-                text: 'Your service invoice for WB-02-AF-9988 is ready.',
-                url: window.location.href,
-            }).catch(console.error);
-        } else {
-            const btn = event.currentTarget;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="material-symbols-outlined">check</span><span>Link Copied</span>';
-            setTimeout(() => btn.innerHTML = originalText, 2000);
-        }
+var invoiceId = JSON.parse(document.getElementById('invoiceId').textContent);
+if (!invoiceId) { document.getElementById('loadingIndicator').querySelector('p').textContent = 'No invoice selected.'; }
+else {
+  fetch('/api/invoice-detail/' + invoiceId + '/')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      document.getElementById('loadingIndicator').style.display = 'none';
+      document.getElementById('invoiceNo').textContent = data.invoice_no;
+      var d = new Date(data.date);
+      document.getElementById('invoiceDate').textContent = d.toLocaleDateString('en-IN', {year:'numeric',month:'short',day:'numeric'}) + ' \u2022 ' + d.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+      if (data.customer) {
+        document.getElementById('customerName').textContent = data.customer.name;
+        document.getElementById('customerVehicle').textContent = data.customer.vehicle_no || '-';
+      } else {
+        document.getElementById('customerName').textContent = 'Walk-in Customer';
+      }
+      var itemsHtml = '';
+      data.items.forEach(function(item, idx) {
+        var bg = idx % 2 === 0 ? '' : ' bg-surface-container-low/30';
+        itemsHtml += '<div class="grid grid-cols-12 py-md px-md items-start' + bg + '"><div class="col-span-6 flex flex-col"><span class="font-label-lg text-on-surface">' + (item.product_name || 'Unknown') + '</span><span class="text-label-md text-on-surface-variant">' + (item.product_sku || '') + '</span></div><div class="col-span-2 text-center font-body-md text-on-surface">' + item.quantity + '</div><div class="col-span-4 text-right font-label-lg text-on-surface">\u20b9' + parseFloat(item.subtotal).toFixed(2) + '</div></div>';
+      });
+      document.getElementById('invoiceItems').innerHTML = itemsHtml;
+      document.getElementById('subtotal').textContent = '\u20b9' + parseFloat(data.subtotal).toFixed(2);
+      document.getElementById('discount').textContent = '\u20b9' + parseFloat(data.discount).toFixed(2);
+      document.getElementById('tax').textContent = '\u20b9' + parseFloat(data.tax).toFixed(2);
+      document.getElementById('total').textContent = '\u20b9' + parseFloat(data.total_amount).toFixed(2);
+    })
+    .catch(function() {
+      document.getElementById('loadingIndicator').querySelector('p').textContent = 'Failed to load invoice.';
     });
-
-    // Thermal Printer Toggle Logic (Simulated)
-    // In a real app, this would inject a specific stylesheet for printing
-    window.onbeforeprint = function() {
-        // Optimization for monochrome/thermal can be added here via class toggles
-        document.getElementById('invoice-document').classList.add('grayscale');
-    };
-    window.onafterprint = function() {
-        document.getElementById('invoice-document').classList.remove('grayscale');
-    };
+  fetch('/api/settings/')
+    .then(function(r) { return r.json(); })
+    .then(function(s) {
+      if (s.shop_name) document.getElementById('shopName').textContent = s.shop_name;
+      if (s.address) document.getElementById('shopAddress').textContent = s.address;
+      if (s.phone) document.getElementById('shopPhone').textContent = s.phone;
+      if (s.email) document.getElementById('shopEmail').textContent = s.email;
+    }).catch(function(){});
+}
+document.getElementById('shareBtn').addEventListener('click', function() {
+  if (navigator.share) {
+    navigator.share({title: 'Invoice', text: 'Invoice ' + (document.getElementById('invoiceNo').textContent || ''), url: window.location.href}).catch(console.error);
+  } else {
+    var btn = this;
+    btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">check</span><span>Link Copied</span>';
+    setTimeout(function() { btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">share</span><span>Share</span>'; }, 2000);
+  }
+});
+window.onbeforeprint = function() { document.getElementById('invoice-document').classList.add('grayscale'); };
+window.onafterprint = function() { document.getElementById('invoice-document').classList.remove('grayscale'); };
 </script>
 <style>
     @media print {

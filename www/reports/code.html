@@ -63,30 +63,18 @@
 </div>
 <!-- Simple Inline SVG Bar Chart -->
 <div class="h-48 w-full flex items-end justify-between px-2 pt-4 relative">
-<!-- Grid lines -->
-<div class="absolute inset-x-0 top-4 h-[1px] bg-surface-variant"></div>
-<div class="absolute inset-x-0 top-1/2 h-[1px] bg-surface-variant"></div>
-<div class="absolute inset-x-0 bottom-0 h-[1px] bg-outline-variant"></div>
-<!-- Bars -->
-<div class="w-8 bg-primary rounded-t-sm transition-all duration-700 hover:opacity-80 relative group" style="height: 60%;">
-<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-surface text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">$4.2k</div>
-</div>
-<div class="w-8 bg-primary rounded-t-sm transition-all duration-700 hover:opacity-80 relative group" style="height: 45%;">
-<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-surface text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">$3.1k</div>
-</div>
-<div class="w-8 bg-primary rounded-t-sm transition-all duration-700 hover:opacity-80 relative group" style="height: 85%;">
-<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-surface text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">$5.9k</div>
-</div>
-<div class="w-8 bg-primary-fixed-dim rounded-t-sm transition-all duration-700 hover:opacity-80 relative group" style="height: 35%;">
-<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-surface text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">$2.4k</div>
-</div>
-<div class="w-8 bg-primary rounded-t-sm transition-all duration-700 hover:opacity-80 relative group" style="height: 70%;">
-<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-surface text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">$4.8k</div>
-</div>
-</div>
-<div class="flex justify-between px-1 text-[10px] font-label-md text-on-surface-variant uppercase tracking-tighter">
-<span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span>
-</div>
+      <div class="absolute inset-x-0 top-4 h-[1px] bg-surface-variant"></div>
+      <div class="absolute inset-x-0 top-1/2 h-[1px] bg-surface-variant"></div>
+      <div class="absolute inset-x-0 bottom-0 h-[1px] bg-outline-variant"></div>
+      <div class="w-8 bg-primary rounded-t-sm transition-all duration-700 hover:opacity-80 relative group" style="height: 50%;"><div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-surface text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">--</div></div>
+      <div class="w-8 bg-primary rounded-t-sm transition-all duration-700 hover:opacity-80 relative group" style="height: 50%;"><div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-surface text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">--</div></div>
+      <div class="w-8 bg-primary rounded-t-sm transition-all duration-700 hover:opacity-80 relative group" style="height: 50%;"><div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-surface text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">--</div></div>
+      <div class="w-8 bg-primary-fixed-dim rounded-t-sm transition-all duration-700 hover:opacity-80 relative group" style="height: 50%;"><div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-surface text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">--</div></div>
+      <div class="w-8 bg-primary rounded-t-sm transition-all duration-700 hover:opacity-80 relative group" style="height: 50%;"><div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-surface text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">--</div></div>
+      </div>
+      <div class="flex justify-between px-1 text-[10px] font-label-md text-on-surface-variant uppercase tracking-tighter">
+      <span>--</span><span>--</span><span>--</span><span>--</span><span>--</span>
+      </div>
 </div>
 <!-- Top Products & Pie Chart -->
 <div class="bg-surface-container-lowest p-md rounded-xl shadow-sm flex flex-col gap-md">
@@ -189,7 +177,80 @@
 </div>
 </div>
 <script>
-  // Simple tab switching for filter chips
+  const API_BASE = 'http://192.168.1.103:8000/api';
+  let currentPeriod = 'weekly';
+
+  function formatCurrency(amount) {
+    return '₹' + Number(amount).toLocaleString('en-IN', {maximumFractionDigits: 2});
+  }
+
+  async function loadReports(period) {
+    try {
+      const res = await fetch(API_BASE + '/reports/data/?period=' + period);
+      const data = await res.json();
+
+      // Update summary metrics
+      document.querySelectorAll('.grid.grid-cols-2 .font-headline-sm')[0].textContent = formatCurrency(data.total_revenue);
+      const changeEl = document.querySelectorAll('.grid.grid-cols-2 .text-green-600 span:last-child');
+      if (changeEl.length > 0) changeEl[0].textContent = (data.change_pct >= 0 ? '+' : '') + data.change_pct + '% vs last period';
+
+      document.querySelectorAll('.grid.grid-cols-2 .font-headline-sm')[1].textContent = data.items_sold;
+      const avgEl = document.querySelectorAll('.grid.grid-cols-2 .text-on-surface-variant');
+      if (avgEl.length > 0) avgEl[0].textContent = data.avg_per_order + ' avg. per order';
+
+      // Update chart bars
+      const bars = document.querySelectorAll('.h-48 .bg-primary, .h-48 .bg-primary-fixed-dim');
+      if (data.sales_history.length > 0) {
+        const maxVal = Math.max(...data.sales_history.map(s => s.amount));
+        data.sales_history.slice(0, bars.length).forEach((s, i) => {
+          if (bars[i]) {
+            const pct = maxVal > 0 ? (s.amount / maxVal) * 85 : 10;
+            bars[i].style.height = Math.max(pct, 10) + '%';
+            const tooltip = bars[i].querySelector('.opacity-0');
+            if (tooltip) tooltip.textContent = formatCurrency(s.amount);
+          }
+        });
+      }
+
+      // Update chart labels
+      const labels = document.querySelectorAll('.flex.justify-between.px-1 span');
+      data.sales_history.slice(0, labels.length).forEach((s, i) => {
+        if (labels[i]) labels[i].textContent = s.label;
+      });
+
+      // Update top products
+      const legendItems = document.querySelectorAll('.bg-surface-container-lowest .flex.flex-col.gap-sm .flex.items-center.justify-between');
+      if (data.top_products.length > 0) {
+        const totalTopQty = data.top_products.reduce((sum, p) => sum + p.qty, 0);
+        const colors = ['bg-primary', 'bg-primary-fixed-dim', 'bg-secondary', 'bg-surface-variant'];
+        const container = document.querySelector('.bg-surface-container-lowest .flex.flex-col.gap-sm');
+        if (container) {
+          container.innerHTML = data.top_products.map((p, i) => {
+            const pct = totalTopQty > 0 ? Math.round((p.qty / totalTopQty) * 100) : 0;
+            return `
+              <div class="flex items-center justify-between text-[12px]">
+                <div class="flex items-center gap-xs">
+                  <div class="w-2 h-2 rounded-full ${colors[i % colors.length]}"></div>
+                  <span class="text-on-surface font-label-md">${p.name}</span>
+                </div>
+                <span class="text-on-surface-variant">${pct}%</span>
+              </div>
+            `;
+          }).join('');
+        }
+        // Update pie chart percentage
+        const pctEl = document.querySelector('.absolute.inset-0 .font-label-lg');
+        if (pctEl) {
+          const top3Pct = data.top_products.slice(0,3).reduce((s, p) => s + p.qty, 0);
+          const grandTotal = data.top_products.reduce((s, p) => s + p.qty, 0);
+          pctEl.textContent = Math.round((top3Pct / grandTotal) * 100) + '%';
+        }
+      }
+    } catch (e) {
+      console.warn('API not reachable, using static data');
+    }
+  }
+
   document.querySelectorAll('.filter-chip').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter-chip').forEach(b => {
@@ -198,22 +259,13 @@
       });
       btn.classList.add('bg-primary', 'text-on-primary');
       btn.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
-      
-      // Visual feedback for data reload
-      const chartBars = document.querySelectorAll('.bg-primary, .bg-primary-fixed-dim');
-      chartBars.forEach(bar => {
-        bar.style.opacity = '0';
-        setTimeout(() => {
-          bar.style.opacity = '1';
-          // Randomize heights for effect
-          const randomHeight = Math.floor(Math.random() * 70) + 20;
-          bar.style.height = randomHeight + '%';
-        }, 300);
-      });
+      currentPeriod = btn.dataset.period;
+      loadReports(currentPeriod);
     });
   });
 
-  // Modal logic
+  document.addEventListener('DOMContentLoaded', () => loadReports('weekly'));
+
   const exportBtn = document.getElementById('exportBtn');
   const exportModal = document.getElementById('exportModal');
   const modalContent = exportModal.querySelector('div');
@@ -243,4 +295,4 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-</style></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-between items-center h-16 px-2 max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="dashboard" href="#"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="billing" href="#"><span class="material-symbols-outlined">receipt_long</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Billing</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="inventory" href="#"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Stock</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-1/5 transition-colors text-primary font-bold" data-path="reports" href="#"><span class="material-symbols-outlined">bar_chart</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Reports</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined">settings</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Settings</span></a></div></nav></body></html>
+</style></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-between items-center h-16 px-2 max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="dashboard" href="http://192.168.1.103:8000/api/pages/dashboard/"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="billing" href="http://192.168.1.103:8000/api/pages/billing/"><span class="material-symbols-outlined">receipt_long</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Billing</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="inventory" href="http://192.168.1.103:8000/api/pages/inventory/"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Stock</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-1/5 transition-colors text-primary font-bold" data-path="reports" href="http://192.168.1.103:8000/api/pages/reports/"><span class="material-symbols-outlined">bar_chart</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Reports</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="settings" href="http://192.168.1.103:8000/api/pages/settings/"><span class="material-symbols-outlined">settings</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Settings</span></a></div></nav></body></html>

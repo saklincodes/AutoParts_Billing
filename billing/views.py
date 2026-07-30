@@ -275,6 +275,33 @@ class ProductViewSet(viewsets.ModelViewSet):
             qs = qs.filter(stock_qty__lte=models.F('low_stock_qty'))
         return qs
 
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        cat_val = data.get('category')
+        if isinstance(cat_val, str) and cat_val.strip():
+            cat_obj, _ = Category.objects.get_or_create(name=cat_val.strip().capitalize())
+            data['category'] = cat_obj.id
+        elif not cat_val:
+            data['category'] = None
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        data = request.data.copy()
+        cat_val = data.get('category')
+        if isinstance(cat_val, str) and cat_val.strip():
+            cat_obj, _ = Category.objects.get_or_create(name=cat_val.strip().capitalize())
+            data['category'] = cat_obj.id
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
     @action(detail=False, methods=['get'])
     def search_min(self, request):
         qs = self.get_queryset()

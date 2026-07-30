@@ -173,16 +173,22 @@ var AppDB = (function () {
     },
     getProduct: function (id) { return getById('products', id); },
     saveProduct: function (product) {
-      if (!product.created_at) product.created_at = new Date().toISOString();
-      var apiEndpoint = (typeof API_BASE !== 'undefined' ? API_BASE : '') + '/products/';
-      fetch(apiEndpoint, {
-        method: product.id ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(product)
-      }).catch(function() {});
+      return initDB().then(function() {
+        if (!product.created_at) product.created_at = new Date().toISOString();
+        if (typeof API_BASE !== 'undefined' && API_BASE) {
+          try {
+            var apiEndpoint = API_BASE + '/products/';
+            fetch(apiEndpoint, {
+              method: product.id ? 'PUT' : 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(product)
+            }).catch(function() {});
+          } catch(e) {}
+        }
 
-      if (product.id) return put('products', product);
-      return add('products', product);
+        if (product.id) return put('products', product);
+        return add('products', product);
+      });
     },
     deleteProduct: function (id) { return remove('products', id); },
     searchProducts: function (query) {

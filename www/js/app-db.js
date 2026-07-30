@@ -28,6 +28,11 @@ var AppDB = (function () {
   };
 
   function getApiBase() {
+    var storedUrl = localStorage.getItem('cloud_api_url');
+    if (storedUrl && storedUrl.trim()) {
+      var cleanUrl = storedUrl.trim().replace(/\/+$/, '');
+      return cleanUrl.endsWith('/api') ? cleanUrl : (cleanUrl + '/api');
+    }
     if (window.API_BASE) return window.API_BASE;
     if (window.location.protocol.startsWith('http')) {
       return '/api';

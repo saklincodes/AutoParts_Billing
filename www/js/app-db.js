@@ -71,7 +71,26 @@ var AppDB = (function () {
           return res.json();
         })
         .then(function (data) {
-          var items = Array.isArray(data) ? data : (data.results || []);
+          var apiItems = Array.isArray(data) ? data : (data.results || []);
+          initDB();
+          var localItems = getItem('products', []);
+          var mergedMap = {};
+
+          apiItems.forEach(function(item) {
+            if (item && item.id) mergedMap[item.id] = item;
+          });
+
+          localItems.forEach(function(item) {
+            if (item && item.id && !mergedMap[item.id]) {
+              mergedMap[item.id] = item;
+            }
+          });
+
+          var items = Object.values(mergedMap);
+          items.sort(function(a, b) {
+            return (Number(b.id) || 0) - (Number(a.id) || 0);
+          });
+
           setItem('products', items);
           return items;
         })
@@ -79,7 +98,9 @@ var AppDB = (function () {
           console.warn('Network fetch failed, falling back to local storage', err);
           initDB();
           var items = getItem('products', INITIAL_PRODUCTS);
-          items.sort(function(a, b) { return (b.id || 0) - (a.id || 0); });
+          items.sort(function(a, b) {
+            return (Number(b.id) || 0) - (Number(a.id) || 0);
+          });
           return items;
         });
     },

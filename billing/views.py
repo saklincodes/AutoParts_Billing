@@ -254,7 +254,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
 
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.select_related('category').all()
+    queryset = Product.objects.select_related('category').all().order_by('-created_at', '-id')
     serializer_class = ProductSerializer
 
     def get_queryset(self):

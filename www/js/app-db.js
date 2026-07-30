@@ -163,32 +163,11 @@ var AppDB = (function () {
     openDB: openDB,
 
     getProducts: function () {
-      return openDB().then(function(db) {
-        return new Promise(function(resolve) {
-          var tx = db.transaction('products', 'readonly');
-          var store = tx.objectStore('products');
-          var req = store.getAll();
-          req.onsuccess = function() {
-            var localItems = req.result || [];
-            var apiEndpoint = (typeof API_BASE !== 'undefined' ? API_BASE : '') + '/products/';
-            fetch(apiEndpoint).then(function(res) {
-              if (res.ok) return res.json();
-              return null;
-            }).then(function(remoteItems) {
-              if (remoteItems && Array.isArray(remoteItems)) {
-                var skuMap = {};
-                remoteItems.forEach(function(item) { skuMap[item.sku || item.id] = item; });
-                localItems.forEach(function(item) { skuMap[item.sku || item.id] = item; });
-                var merged = Object.values(skuMap);
-                resolve(merged.reverse());
-              } else {
-                resolve(localItems.slice().reverse());
-              }
-            }).catch(function() {
-              resolve(localItems.slice().reverse());
-            });
-          };
-          req.onerror = function() { resolve([]); };
+      return initDB().then(function() {
+        return getAll('products').then(function(items) {
+          items = items || [];
+          items.sort(function(a, b) { return (b.id || 0) - (a.id || 0); });
+          return items;
         });
       });
     },

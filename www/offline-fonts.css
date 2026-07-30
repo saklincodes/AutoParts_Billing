@@ -135,7 +135,7 @@ body:not(.desktop-body) main {
   min-height: 100vh !important;
   min-height: 100dvh !important;
   padding-top: calc(3.25rem + env(safe-area-inset-top, 24px) + 16px) !important;
-  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 16px)) !important;
+  padding-bottom: calc(9rem + env(safe-area-inset-bottom, 24px)) !important;
   overflow-y: visible !important;
   -webkit-overflow-scrolling: touch !important;
 }

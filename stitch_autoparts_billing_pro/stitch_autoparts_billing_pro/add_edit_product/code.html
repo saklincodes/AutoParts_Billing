@@ -175,18 +175,47 @@
   thresholdInput.addEventListener('input', checkStock);
 
   // Form Submission
-  document.getElementById('productForm').addEventListener('submit', (e) => {
+  document.getElementById('productForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('saveBtn');
     btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Saving...';
     btn.classList.add('opacity-80', 'pointer-events-none');
-    
-    setTimeout(() => {
+
+    const name = document.getElementById('pName').value.trim();
+    const sku = document.getElementById('pSKU').value.trim() || ('SKU-' + Math.floor(1000 + Math.random() * 9000));
+    const price = parseFloat(document.getElementById('pPrice').value) || 0;
+    const stock_qty = parseInt(document.getElementById('pStock').value) || 0;
+    const low_stock_qty = parseInt(document.getElementById('pThreshold').value) || 5;
+    const description = document.getElementById('pDesc').value.trim();
+
+    try {
+      const res = await fetch('/api/products/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          sku: sku,
+          price: price,
+          stock_qty: stock_qty,
+          low_stock_qty: low_stock_qty,
+          description: description
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(JSON.stringify(errData));
+      }
+
       btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Success';
       btn.classList.replace('bg-primary', 'bg-emerald-600');
       setTimeout(() => {
-        history.back();
+        window.location.href = '/api/pages/inventory/';
       }, 800);
-    }, 1200);
+    } catch (err) {
+      alert('Failed to save product: ' + err.message);
+      btn.innerHTML = '<span class="material-symbols-outlined">save</span> Save Product';
+      btn.classList.remove('opacity-80', 'pointer-events-none');
+    }
   });
 </script></main></body></html>

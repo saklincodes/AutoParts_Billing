@@ -37,7 +37,7 @@ var AppDB = (function () {
     if (window.location.protocol.startsWith('http')) {
       return '/api';
     }
-    return 'http://192.168.1.103:8000/api';
+    return 'https://autoparts-billing.onrender.com/api';
   }
 
   function getItem(key, defaultVal) {

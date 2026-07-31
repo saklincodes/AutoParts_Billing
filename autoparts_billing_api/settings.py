@@ -126,4 +126,5 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'stitch_autoparts_billing_pro' / 'stitch_autoparts_billing_pro',
+    BASE_DIR / 'www',
 ]

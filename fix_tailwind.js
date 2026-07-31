@@ -6,7 +6,7 @@ function getAllHtml(dir) {
   let items;
   try { items = fs.readdirSync(dir, { withFileTypes: true }); } catch(e) { return []; }
   for (const item of items) {
-    if (['android', '.git', 'node_modules', 'stitch_autoparts_billing_pro'].includes(item.name)) continue;
+    if (['android', '.git', 'node_modules'].includes(item.name)) continue;
     const full = path.join(dir, item.name);
     if (item.isDirectory()) {
       results = results.concat(getAllHtml(full));
@@ -17,25 +17,30 @@ function getAllHtml(dir) {
   return results;
 }
 
-const wwwDir = path.resolve('www');
-const files = getAllHtml(wwwDir);
-let changed = 0;
+const dirsToProcess = [
+  path.resolve('stitch_autoparts_billing_pro/stitch_autoparts_billing_pro'),
+  path.resolve('www')
+];
 
-for (const f of files) {
-  let content = fs.readFileSync(f, 'utf8');
-  if (content.includes('cdn.tailwindcss.com')) {
-    // All html files are inside www/subfolder/code.html — so tailwind is ../tailwind.min.js
-    const depth = path.relative(wwwDir, path.dirname(f)).split(path.sep).filter(Boolean).length;
-    const prefix = depth === 0 ? '.' : Array(depth).fill('..').join('/');
-    const localPath = prefix + '/tailwind.min.js';
-    
-    content = content.split('<script src="https://cdn.tailwindcss.com"></script>').join(
-      '<script src="' + localPath + '"></script>'
+let totalFiles = 0;
+
+for (const d of dirsToProcess) {
+  const htmlFiles = getAllHtml(d);
+  for (const f of htmlFiles) {
+    let content = fs.readFileSync(f, 'utf8');
+    let original = content;
+
+    // Replace any tailwind script tag with CDN + fallback
+    content = content.replace(
+      /<script[^>]*src="[^"]*tailwind[^"]*"[^>]*><\/script>/gi,
+      '<script src="https://cdn.tailwindcss.com"></script><script src="/static/tailwind.min.js" onerror="this.onerror=null;this.src=\'../tailwind.min.js\'"></script>'
     );
-    
-    fs.writeFileSync(f, content, 'utf8');
-    console.log('Fixed:', path.relative(wwwDir, f), '-> ' + localPath);
-    changed++;
+
+    if (content !== original) {
+      fs.writeFileSync(f, content, 'utf8');
+      totalFiles++;
+    }
   }
 }
-console.log('\nTotal files fixed:', changed);
+
+console.log(`Updated Tailwind CDN in ${totalFiles} HTML files!`);

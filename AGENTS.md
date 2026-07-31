@@ -66,6 +66,10 @@ All 27 URLs tested and return 200:
 7. 8 pages had `href="#"` → real API URLs
 8. Stock Adjustment nav link → points to self (not inventory)
 9. Inventory FAB → now has add-product + stock-adjustment buttons
+10. Material Symbols raw text bug → fixed font-family overrides & restored Google Fonts + offline woff2 fallbacks across all 65 HTML files.
+11. Unstyled Tailwind bug → restored `https://cdn.tailwindcss.com` with `onerror` fallback to `/static/tailwind.min.js` across all 65 HTML files.
+12. AppDB ReferenceError (404) → added `BASE_DIR / 'www'` to Django `STATICFILES_DIRS` & copied `js/` to template source so `/static/js/app-db.js` returns 200 OK.
+13. Dual-mode asset paths → updated script, logo, and font tags to support both Django web server (`/static/`) and Capacitor APK (`../`).
 
 ## Capacitor App Status
 - www/ HTML is a COPY of Django HTML, with modifications:

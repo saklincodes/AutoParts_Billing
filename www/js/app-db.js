@@ -27,6 +27,8 @@ var AppDB = (function () {
     printer_type: 'thermal'
   };
 
+  var DEFAULT_CLOUD_API = 'https://autoparts-billing.onrender.com/api';
+
   function getApiBase() {
     var storedUrl = localStorage.getItem('cloud_api_url');
     if (storedUrl && storedUrl.trim()) {
@@ -34,10 +36,7 @@ var AppDB = (function () {
       return cleanUrl.endsWith('/api') ? cleanUrl : (cleanUrl + '/api');
     }
     if (window.API_BASE) return window.API_BASE;
-    if (window.location.protocol.startsWith('http')) {
-      return '/api';
-    }
-    return 'https://autoparts-billing.onrender.com/api';
+    return DEFAULT_CLOUD_API;
   }
 
   function getItem(key, defaultVal) {

@@ -195,6 +195,7 @@
         body: JSON.stringify({
           name: name,
           sku: sku,
+          category: document.getElementById('pCategory').value || 'general',
           price: price,
           stock_qty: stock_qty,
           low_stock_qty: low_stock_qty,

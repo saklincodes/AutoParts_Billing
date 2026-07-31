@@ -27,6 +27,18 @@ var AppDB = (function () {
     printer_type: 'thermal'
   };
 
+  var DEFAULT_CLOUD_API = 'https://autoparts-billing.onrender.com/api';
+
+  function getApiBase() {
+    var storedUrl = localStorage.getItem('cloud_api_url');
+    if (storedUrl && storedUrl.trim()) {
+      var cleanUrl = storedUrl.trim().replace(/\/+$/, '');
+      return cleanUrl.endsWith('/api') ? cleanUrl : (cleanUrl + '/api');
+    }
+    if (window.API_BASE) return window.API_BASE;
+    return DEFAULT_CLOUD_API;
+  }
+
   function getItem(key, defaultVal) {
     try {
       var val = localStorage.getItem('appdb_' + key);
@@ -57,45 +69,127 @@ var AppDB = (function () {
     init: function () { return initDB(); },
 
     getProducts: function () {
-      initDB();
-      var items = getItem('products', INITIAL_PRODUCTS);
-      items.sort(function(a, b) { return (b.id || 0) - (a.id || 0); });
-      return Promise.resolve(items);
+      return fetch(getApiBase() + '/products/', { mode: 'cors' })
+        .then(function (res) {
+          if (!res.ok) throw new Error('API error ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          var apiItems = Array.isArray(data) ? data : (data.results || []);
+          initDB();
+          var localItems = getItem('products', []);
+          var mergedMap = {};
+
+          apiItems.forEach(function(item) {
+            if (item && item.id) mergedMap[item.id] = item;
+          });
+
+          localItems.forEach(function(item) {
+            if (item && item.id && !mergedMap[item.id]) {
+              mergedMap[item.id] = item;
+            }
+          });
+
+          var items = Object.values(mergedMap);
+          items.sort(function(a, b) {
+            return (Number(b.id) || 0) - (Number(a.id) || 0);
+          });
+
+          setItem('products', items);
+          return items;
+        })
+        .catch(function (err) {
+          console.warn('Network fetch failed, falling back to local storage', err);
+          initDB();
+          var items = getItem('products', INITIAL_PRODUCTS);
+          items.sort(function(a, b) {
+            return (Number(b.id) || 0) - (Number(a.id) || 0);
+          });
+          return items;
+        });
     },
 
     getProduct: function (id) {
-      return this.getProducts().then(function(items) {
-        return items.find(function(p) { return Number(p.id) === Number(id); }) || null;
-      });
+      return fetch(getApiBase() + '/products/' + id + '/')
+        .then(function (res) {
+          if (!res.ok) throw new Error();
+          return res.json();
+        })
+        .catch(function () {
+          return AppDB.getProducts().then(function(items) {
+            return items.find(function(p) { return Number(p.id) === Number(id); }) || null;
+          });
+        });
     },
 
     saveProduct: function (product) {
-      initDB();
-      var items = getItem('products', INITIAL_PRODUCTS);
-      if (!product.created_at) product.created_at = new Date().toISOString();
+      var isEdit = Boolean(product.id);
+      var url = isEdit ? (getApiBase() + '/products/' + product.id + '/') : (getApiBase() + '/products/');
+      var method = isEdit ? 'PUT' : 'POST';
 
-      if (product.id) {
-        var idx = items.findIndex(function(p) { return Number(p.id) === Number(product.id); });
-        if (idx !== -1) {
-          items[idx] = Object.assign({}, items[idx], product);
+      var payload = {
+        name: product.name,
+        sku: product.sku || ('SKU-' + Math.floor(Math.random() * 8999 + 1000)),
+        category: product.category || 'general',
+        price: parseFloat(product.price) || 0,
+        stock_qty: parseInt(product.stock_qty) || 0,
+        low_stock_qty: parseInt(product.low_stock_qty) || 5,
+        brand: product.brand || '',
+        description: product.description || '',
+        image: product.image || ''
+      };
+
+      return fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(function (res) {
+        if (!res.ok) return res.json().then(function(err) { throw new Error(JSON.stringify(err)); });
+        return res.json();
+      })
+      .then(function (savedItem) {
+        initDB();
+        var items = getItem('products', INITIAL_PRODUCTS);
+        if (isEdit) {
+          var idx = items.findIndex(function(p) { return Number(p.id) === Number(savedItem.id); });
+          if (idx !== -1) items[idx] = savedItem;
+          else items.unshift(savedItem);
         } else {
-          items.push(product);
+          items.unshift(savedItem);
         }
-      } else {
-        var maxId = items.reduce(function(max, p) { return Math.max(max, Number(p.id) || 0); }, 0);
-        product.id = maxId + 1;
-        items.push(product);
-      }
-      setItem('products', items);
-      return Promise.resolve(product.id);
+        setItem('products', items);
+        return savedItem.id;
+      })
+      .catch(function (err) {
+        console.warn('API save failed, using local storage fallback', err);
+        initDB();
+        var items = getItem('products', INITIAL_PRODUCTS);
+        if (!product.created_at) product.created_at = new Date().toISOString();
+
+        if (product.id) {
+          var idx = items.findIndex(function(p) { return Number(p.id) === Number(product.id); });
+          if (idx !== -1) items[idx] = Object.assign({}, items[idx], product);
+          else items.push(product);
+        } else {
+          var maxId = items.reduce(function(max, p) { return Math.max(max, Number(p.id) || 0); }, 0);
+          product.id = maxId + 1;
+          items.unshift(product);
+        }
+        setItem('products', items);
+        return product.id;
+      });
     },
 
     deleteProduct: function (id) {
-      initDB();
-      var items = getItem('products', []);
-      items = items.filter(function(p) { return Number(p.id) !== Number(id); });
-      setItem('products', items);
-      return Promise.resolve();
+      return fetch(getApiBase() + '/products/' + id + '/', { method: 'DELETE' })
+        .catch(function (e) {})
+        .then(function () {
+          initDB();
+          var items = getItem('products', []);
+          items = items.filter(function(p) { return Number(p.id) !== Number(id); });
+          setItem('products', items);
+        });
     },
 
     searchProducts: function (query) {
@@ -119,8 +213,17 @@ var AppDB = (function () {
     },
 
     getCustomers: function () {
-      initDB();
-      return Promise.resolve(getItem('customers', INITIAL_CUSTOMERS));
+      return fetch(getApiBase() + '/customers/')
+        .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
+        .then(function(data) {
+          var items = Array.isArray(data) ? data : (data.results || []);
+          setItem('customers', items);
+          return items;
+        })
+        .catch(function() {
+          initDB();
+          return getItem('customers', INITIAL_CUSTOMERS);
+        });
     },
 
     getCustomer: function (id) {
@@ -130,19 +233,44 @@ var AppDB = (function () {
     },
 
     saveCustomer: function (customer) {
-      initDB();
-      var items = getItem('customers', INITIAL_CUSTOMERS);
-      if (customer.id) {
-        var idx = items.findIndex(function(c) { return Number(c.id) === Number(customer.id); });
-        if (idx !== -1) items[idx] = Object.assign({}, items[idx], customer);
-        else items.push(customer);
-      } else {
-        var maxId = items.reduce(function(max, c) { return Math.max(max, Number(c.id) || 0); }, 0);
-        customer.id = maxId + 1;
-        items.push(customer);
-      }
-      setItem('customers', items);
-      return Promise.resolve(customer.id);
+      var isEdit = Boolean(customer.id);
+      var url = isEdit ? (getApiBase() + '/customers/' + customer.id + '/') : (getApiBase() + '/customers/');
+      var method = isEdit ? 'PUT' : 'POST';
+
+      return fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(customer)
+      })
+      .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
+      .then(function(saved) {
+        initDB();
+        var items = getItem('customers', INITIAL_CUSTOMERS);
+        if (isEdit) {
+          var idx = items.findIndex(function(c) { return Number(c.id) === Number(saved.id); });
+          if (idx !== -1) items[idx] = saved;
+          else items.unshift(saved);
+        } else {
+          items.unshift(saved);
+        }
+        setItem('customers', items);
+        return saved.id;
+      })
+      .catch(function() {
+        initDB();
+        var items = getItem('customers', INITIAL_CUSTOMERS);
+        if (customer.id) {
+          var idx = items.findIndex(function(c) { return Number(c.id) === Number(customer.id); });
+          if (idx !== -1) items[idx] = Object.assign({}, items[idx], customer);
+          else items.push(customer);
+        } else {
+          var maxId = items.reduce(function(max, c) { return Math.max(max, Number(c.id) || 0); }, 0);
+          customer.id = maxId + 1;
+          items.push(customer);
+        }
+        setItem('customers', items);
+        return customer.id;
+      });
     },
 
     searchCustomers: function (query) {
@@ -158,226 +286,277 @@ var AppDB = (function () {
     },
 
     createInvoice: function (invoiceData) {
-      initDB();
-      var products = getItem('products', []);
-      var customers = getItem('customers', []);
-      var invoices = getItem('invoices', []);
+      return fetch(getApiBase() + '/invoices/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(invoiceData)
+      })
+      .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
+      .then(function(saved) {
+        return { id: saved.id, invoice_no: saved.invoice_no, total_amount: saved.total_amount };
+      })
+      .catch(function() {
+        initDB();
+        var products = getItem('products', []);
+        var customers = getItem('customers', []);
+        var invoices = getItem('invoices', []);
 
-      var invoice_no = 'INV-' + Date.now();
-      var subtotal = 0;
-      var items = invoiceData.items || [];
-      var processedItems = [];
+        var invoice_no = 'INV-' + Date.now();
+        var subtotal = 0;
+        var items = invoiceData.items || [];
+        var processedItems = [];
 
-      items.forEach(function (item) {
-        var prodIdx = products.findIndex(function(p) { return Number(p.id) === Number(item.product_id); });
-        if (prodIdx !== -1) {
-          var product = products[prodIdx];
-          var qty = item.quantity || 1;
-          var unitPrice = item.unit_price || product.price;
-          var lineSubtotal = qty * unitPrice;
-          subtotal += lineSubtotal;
+        items.forEach(function (item) {
+          var prodIdx = products.findIndex(function(p) { return Number(p.id) === Number(item.product_id); });
+          if (prodIdx !== -1) {
+            var product = products[prodIdx];
+            var qty = item.quantity || 1;
+            var unitPrice = item.unit_price || product.price;
+            var lineSubtotal = qty * unitPrice;
+            subtotal += lineSubtotal;
 
-          product.stock_qty -= qty;
-          products[prodIdx] = product;
+            product.stock_qty -= qty;
+            products[prodIdx] = product;
 
-          processedItems.push({
-            product_id: product.id,
-            product_name: product.name,
-            product_sku: product.sku,
-            quantity: qty,
-            unit_price: unitPrice,
-            subtotal: lineSubtotal
-          });
-        }
-      });
-
-      setItem('products', products);
-
-      var discount = invoiceData.discount || 0;
-      var tax = invoiceData.tax || 0;
-      var total_amount = subtotal - discount + tax;
-
-      var invRecord = {
-        id: invoices.length + 1,
-        invoice_no: invoice_no,
-        customer_id: invoiceData.customer_id || null,
-        customer_name: invoiceData.customer_name || 'Walk-in Customer',
-        subtotal: subtotal,
-        discount: discount,
-        tax: tax,
-        total_amount: total_amount,
-        status: invoiceData.status || 'paid',
-        items: JSON.stringify(processedItems),
-        created_at: new Date().toISOString()
-      };
-
-      invoices.push(invRecord);
-      setItem('invoices', invoices);
-
-      if (invoiceData.customer_id) {
-        var custIdx = customers.findIndex(function(c) { return Number(c.id) === Number(invoiceData.customer_id); });
-        if (custIdx !== -1) {
-          customers[custIdx].total_visits = (customers[custIdx].total_visits || 0) + 1;
-          customers[custIdx].total_spent = (customers[custIdx].total_spent || 0) + total_amount;
-          setItem('customers', customers);
-        }
-      }
-
-      return Promise.resolve({ id: invRecord.id, invoice_no: invoice_no, total_amount: total_amount });
-    },
-
-    getInvoices: function () {
-      initDB();
-      var invoices = getItem('invoices', []);
-      invoices.sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
-      return Promise.resolve(invoices);
-    },
-
-    getInvoiceDetail: function (id) {
-      return this.getInvoices().then(function (invoices) {
-        var inv = invoices.find(function(i) { return Number(i.id) === Number(id); });
-        if (!inv) return null;
-        var copy = Object.assign({}, inv);
-        copy.items = typeof copy.items === 'string' ? JSON.parse(copy.items) : copy.items;
-        return copy;
-      });
-    },
-
-    getRecentInvoices: function (limit) {
-      limit = limit || 5;
-      return this.getInvoices().then(function (invoices) {
-        return invoices.slice(0, limit);
-      });
-    },
-
-    getReportsData: function (period) {
-      period = period || 'weekly';
-      return this.getInvoices().then(function (invoices) {
-        var now = new Date();
-        var startDate;
-        var labelFmt = function (d) { var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; return days[d.getDay()]; };
-
-        switch (period) {
-          case 'daily':
-            startDate = new Date(now);
-            startDate.setDate(startDate.getDate() - 6);
-            break;
-          case 'monthly':
-            startDate = new Date(now);
-            startDate.setDate(startDate.getDate() - 30);
-            labelFmt = function (d) { return d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; };
-            break;
-          case 'yearly':
-            startDate = new Date(now);
-            startDate.setFullYear(startDate.getFullYear() - 1);
-            labelFmt = function (d) { return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; };
-            break;
-          default:
-            startDate = new Date(now);
-            startDate.setDate(startDate.getDate() - 7);
-        }
-
-        var filtered = invoices.filter(function (inv) {
-          var d = new Date(inv.created_at);
-          return d >= startDate && inv.status === 'paid';
-        });
-
-        var total_revenue = 0;
-        var items_sold = 0;
-        var salesMap = {};
-
-        filtered.forEach(function (inv) {
-          var d = new Date(inv.created_at);
-          var key = labelFmt(d);
-          salesMap[key] = (salesMap[key] || 0) + inv.total_amount;
-          total_revenue += inv.total_amount;
-          var invItems = typeof inv.items === 'string' ? JSON.parse(inv.items) : inv.items;
-          if (Array.isArray(invItems)) {
-            invItems.forEach(function (it) { items_sold += it.quantity; });
-          }
-        });
-
-        var sales_history = Object.keys(salesMap).map(function (key) {
-          return { label: key, amount: salesMap[key] };
-        });
-
-        var avg_per_order = filtered.length > 0 ? Math.round(items_sold / filtered.length) : 0;
-
-        var productQtyMap = {};
-        filtered.forEach(function (inv) {
-          var invItems = typeof inv.items === 'string' ? JSON.parse(inv.items) : inv.items;
-          if (Array.isArray(invItems)) {
-            invItems.forEach(function (it) {
-              productQtyMap[it.product_name] = (productQtyMap[it.product_name] || 0) + it.quantity;
+            processedItems.push({
+              product_id: product.id,
+              product_name: product.name,
+              product_sku: product.sku,
+              quantity: qty,
+              unit_price: unitPrice,
+              subtotal: lineSubtotal
             });
           }
         });
 
-        var top_products = Object.keys(productQtyMap).map(function (name) {
-          return { name: name, qty: productQtyMap[name] };
-        }).sort(function (a, b) { return b.qty - a.qty; }).slice(0, 5);
+        setItem('products', products);
 
-        return {
-          total_revenue: total_revenue,
-          items_sold: items_sold,
-          avg_per_order: avg_per_order,
-          change_pct: 0,
-          sales_history: sales_history,
-          top_products: top_products
+        var discount = invoiceData.discount || 0;
+        var tax = invoiceData.tax || 0;
+        var total_amount = subtotal - discount + tax;
+
+        var invRecord = {
+          id: invoices.length + 1,
+          invoice_no: invoice_no,
+          customer_id: invoiceData.customer_id || null,
+          customer_name: invoiceData.customer_name || 'Walk-in Customer',
+          subtotal: subtotal,
+          discount: discount,
+          tax: tax,
+          total_amount: total_amount,
+          status: invoiceData.status || 'paid',
+          items: JSON.stringify(processedItems),
+          created_at: new Date().toISOString()
         };
+
+        invoices.push(invRecord);
+        setItem('invoices', invoices);
+
+        return { id: invRecord.id, invoice_no: invoice_no, total_amount: total_amount };
       });
     },
 
+    getInvoices: function () {
+      return fetch(getApiBase() + '/invoices/')
+        .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
+        .then(function(data) {
+          var items = Array.isArray(data) ? data : (data.results || []);
+          setItem('invoices', items);
+          return items;
+        })
+        .catch(function() {
+          initDB();
+          var invoices = getItem('invoices', []);
+          invoices.sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+          return invoices;
+        });
+    },
+
+    getInvoiceDetail: function (id) {
+      return fetch(getApiBase() + '/invoice-detail/' + id + '/')
+        .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
+        .catch(function() {
+          return AppDB.getInvoices().then(function (invoices) {
+            var inv = invoices.find(function(i) { return Number(i.id) === Number(id); });
+            if (!inv) return null;
+            var copy = Object.assign({}, inv);
+            copy.items = typeof copy.items === 'string' ? JSON.parse(copy.items) : copy.items;
+            return copy;
+          });
+        });
+    },
+
+    getRecentInvoices: function (limit) {
+      limit = limit || 5;
+      return fetch(getApiBase() + '/dashboard/recent-invoices/')
+        .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
+        .catch(function() {
+          return AppDB.getInvoices().then(function (invoices) {
+            return invoices.slice(0, limit);
+          });
+        });
+    },
+
+    getReportsData: function (period) {
+      period = period || 'weekly';
+      return fetch(getApiBase() + '/reports/data/?period=' + period)
+        .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
+        .catch(function() {
+          return AppDB.getInvoices().then(function (invoices) {
+            var now = new Date();
+            var startDate;
+            var labelFmt = function (d) { var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; return days[d.getDay()]; };
+
+            switch (period) {
+              case 'daily':
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - 6);
+                break;
+              case 'monthly':
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - 30);
+                labelFmt = function (d) { return d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; };
+                break;
+              case 'yearly':
+                startDate = new Date(now);
+                startDate.setFullYear(startDate.getFullYear() - 1);
+                labelFmt = function (d) { return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; };
+                break;
+              default:
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - 7);
+            }
+
+            var filtered = invoices.filter(function (inv) {
+              var d = new Date(inv.created_at);
+              return d >= startDate && inv.status === 'paid';
+            });
+
+            var total_revenue = 0;
+            var items_sold = 0;
+            var salesMap = {};
+
+            filtered.forEach(function (inv) {
+              var d = new Date(inv.created_at);
+              var key = labelFmt(d);
+              salesMap[key] = (salesMap[key] || 0) + inv.total_amount;
+              total_revenue += inv.total_amount;
+              var invItems = typeof inv.items === 'string' ? JSON.parse(inv.items) : inv.items;
+              if (Array.isArray(invItems)) {
+                invItems.forEach(function (it) { items_sold += it.quantity; });
+              }
+            });
+
+            var sales_history = Object.keys(salesMap).map(function (key) {
+              return { label: key, amount: salesMap[key] };
+            });
+
+            var avg_per_order = filtered.length > 0 ? Math.round(items_sold / filtered.length) : 0;
+
+            var productQtyMap = {};
+            filtered.forEach(function (inv) {
+              var invItems = typeof inv.items === 'string' ? JSON.parse(inv.items) : inv.items;
+              if (Array.isArray(invItems)) {
+                invItems.forEach(function (it) {
+                  productQtyMap[it.product_name] = (productQtyMap[it.product_name] || 0) + it.quantity;
+                });
+              }
+            });
+
+            var top_products = Object.keys(productQtyMap).map(function (name) {
+              return { name: name, qty: productQtyMap[name] };
+            }).sort(function (a, b) { return b.qty - a.qty; }).slice(0, 5);
+
+            return {
+              total_revenue: total_revenue,
+              items_sold: items_sold,
+              avg_per_order: avg_per_order,
+              change_pct: 0,
+              sales_history: sales_history,
+              top_products: top_products
+            };
+          });
+        });
+    },
+
     getShopSettings: function () {
-      initDB();
-      return getItem('shop_settings', INITIAL_SETTINGS);
+      return fetch(getApiBase() + '/settings/')
+        .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
+        .then(function(data) {
+          setItem('shop_settings', data);
+          return data;
+        })
+        .catch(function() {
+          initDB();
+          return getItem('shop_settings', INITIAL_SETTINGS);
+        });
     },
 
     saveShopSettings: function (settings) {
-      initDB();
-      var current = this.getShopSettings();
-      Object.keys(settings).forEach(function (k) { current[k] = settings[k]; });
-      setItem('shop_settings', current);
-      return Promise.resolve(current);
+      return fetch(getApiBase() + '/settings/', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      })
+      .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
+      .then(function(data) {
+        var current = getItem('shop_settings', INITIAL_SETTINGS);
+        Object.keys(settings).forEach(function (k) { current[k] = settings[k]; });
+        setItem('shop_settings', current);
+        return current;
+      })
+      .catch(function() {
+        initDB();
+        var current = getItem('shop_settings', INITIAL_SETTINGS);
+        Object.keys(settings).forEach(function (k) { current[k] = settings[k]; });
+        setItem('shop_settings', current);
+        return current;
+      });
     },
 
     updateShopSetting: function (field, value) {
-      initDB();
-      var current = this.getShopSettings();
-      current[field] = value;
-      setItem('shop_settings', current);
-      return Promise.resolve(current);
+      var obj = {};
+      obj[field] = value;
+      return this.saveShopSettings(obj);
     },
 
     addStockAdjustment: function (data) {
-      initDB();
-      var products = getItem('products', []);
-      var adjustments = getItem('stockAdjustments', []);
+      return fetch(getApiBase() + '/stock-adjustments/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
+      .catch(function() {
+        initDB();
+        var products = getItem('products', []);
+        var adjustments = getItem('stockAdjustments', []);
 
-      var prodIdx = products.findIndex(function(p) { return Number(p.id) === Number(data.product_id); });
-      if (prodIdx !== -1) {
-        var qty = Number(data.qty) || 0;
-        if (data.type === 'add' || data.type === 'restock') {
-          products[prodIdx].stock_qty += qty;
-        } else if (data.type === 'remove' || data.type === 'damage') {
-          products[prodIdx].stock_qty = Math.max(0, products[prodIdx].stock_qty - qty);
-        } else if (data.type === 'audit') {
-          products[prodIdx].stock_qty = qty;
+        var prodIdx = products.findIndex(function(p) { return Number(p.id) === Number(data.product_id); });
+        if (prodIdx !== -1) {
+          var qty = Number(data.qty) || 0;
+          if (data.type === 'add' || data.type === 'restock') {
+            products[prodIdx].stock_qty += qty;
+          } else if (data.type === 'remove' || data.type === 'damage') {
+            products[prodIdx].stock_qty = Math.max(0, products[prodIdx].stock_qty - qty);
+          } else if (data.type === 'audit') {
+            products[prodIdx].stock_qty = qty;
+          }
+          setItem('products', products);
         }
-        setItem('products', products);
-      }
 
-      var record = {
-        id: adjustments.length + 1,
-        product_id: data.product_id,
-        type: data.type,
-        qty: data.qty,
-        reason: data.reason || '',
-        created_at: new Date().toISOString()
-      };
-      adjustments.push(record);
-      setItem('stockAdjustments', adjustments);
-      return Promise.resolve(record);
+        var record = {
+          id: adjustments.length + 1,
+          product_id: data.product_id,
+          type: data.type,
+          qty: data.qty,
+          reason: data.reason || '',
+          created_at: new Date().toISOString()
+        };
+        adjustments.push(record);
+        setItem('stockAdjustments', adjustments);
+        return record;
+      });
     }
   };
 })();

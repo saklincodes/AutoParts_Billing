@@ -13,7 +13,7 @@ router.register(r'stock-adjustments', views.StockAdjustmentViewSet)
 
 urlpatterns = [
     path('', views.page_dashboard, name='home'),
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
     path('dashboard/stats/', views.dashboard_stats, name='dashboard-stats'),
     path('dashboard/recent-invoices/', views.recent_invoices, name='recent-invoices'),
     path('pages/dashboard/', views.page_dashboard, name='page-dashboard'),

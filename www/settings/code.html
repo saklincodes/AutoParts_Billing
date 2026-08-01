@@ -306,11 +306,28 @@ async function testCloudConnection() {
   if (dot) dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
   if (text) text.textContent = 'Testing...';
 
+  if (!url) {
+    if (dot) dot.className = 'w-2 h-2 rounded-full bg-error';
+    if (text) text.textContent = 'Disconnected';
+    return;
+  }
+
+  var controller = new AbortController();
+  var timer = setTimeout(function() { controller.abort(); }, 20000);
+
   try {
-    var products = await AppDB.getProducts();
-    if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
-    if (text) text.textContent = 'Live Connected (' + products.length + ' items)';
-  } catch(e) {
+    var base = url.replace(/\/+$/, '');
+    var res = await fetch(base + '/settings/', { signal: controller.signal });
+    clearTimeout(timer);
+    if (res.ok) {
+      if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+      if (text) text.textContent = 'Connected to cloud server';
+    } else {
+      if (dot) dot.className = 'w-2 h-2 rounded-full bg-error';
+      if (text) text.textContent = 'Server error ' + res.status;
+    }
+  } catch (e) {
+    clearTimeout(timer);
     if (dot) dot.className = 'w-2 h-2 rounded-full bg-error';
     if (text) text.textContent = 'Disconnected';
   }

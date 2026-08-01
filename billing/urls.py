@@ -26,6 +26,8 @@ urlpatterns = [
     path('pages/user-management/', views.page_user_management, name='page-user-management'),
     path('pages/vehicle-profile/', views.page_vehicle_profile, name='page-vehicle-profile'),
     path('pages/add-product/', views.page_add_product, name='page-add-product'),
+    path('pages/edit-product/', views.page_add_product, name='page-edit-product'),
+    path('pages/add_edit_product/code.html', views.page_add_product, name='page-add-edit-product-html'),
     path('pages/inventory/', views.page_inventory, name='page-inventory'),
     path('pages/customers/', views.page_customers, name='page-customers'),
     path('settings/', views.shop_settings, name='shop-settings'),
@@ -34,4 +36,6 @@ urlpatterns = [
     path('pages/settings/', views.page_settings, name='page-settings'),
     path('invoice-detail/<int:invoice_id>/', views.invoice_detail, name='invoice-detail'),
     path('pages/invoice-preview/<int:invoice_id>/', views.page_invoice_preview, name='page-invoice-preview'),
+    path('pages/invoice-preview/', views.page_invoice_preview, name='page-invoice-preview-query'),
+    path('pages/invoice_preview_1/code.html', views.page_invoice_preview, name='page-invoice-preview-html'),
 ]

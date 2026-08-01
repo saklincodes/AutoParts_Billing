@@ -36,6 +36,9 @@ var AppDB = (function () {
       return cleanUrl.endsWith('/api') ? cleanUrl : (cleanUrl + '/api');
     }
     if (window.API_BASE) return window.API_BASE;
+    if (window.location.protocol.indexOf('http') === 0 && window.location.origin) {
+      return window.location.origin + '/api';
+    }
     return DEFAULT_CLOUD_API;
   }
 
@@ -557,6 +560,42 @@ var AppDB = (function () {
         setItem('stockAdjustments', adjustments);
         return record;
       });
+    },
+
+    createStockAdjustment: function (data) {
+      return this.addStockAdjustment(data);
+    },
+
+    getStockAdjustments: function () {
+      return fetch(getApiBase() + '/stock-adjustments/', { mode: 'cors' })
+        .then(function (res) {
+          if (!res.ok) throw new Error();
+          return res.json();
+        })
+        .then(function (data) {
+          return Array.isArray(data) ? data : (data.results || []);
+        })
+        .catch(function () {
+          initDB();
+          return getItem('stockAdjustments', []);
+        });
+    },
+
+    formatCurrency: function (num) {
+      var n = Number(num) || 0;
+      return '₹' + n.toFixed(2);
+    },
+
+    getApiBaseUrl: function () {
+      return getApiBase();
     }
   };
 })();
+
+/* Global Mouse Wheel Scroll Engine: Guarantees PC mouse wheel scrolling works 100% anywhere on screen */
+if (typeof window !== 'undefined') {
+  window.addEventListener('wheel', function (e) {
+    if (e.defaultPrevented) return;
+    window.scrollBy(0, e.deltaY);
+  }, { passive: true });
+}

@@ -63,6 +63,7 @@ var AppDB = (function () {
       setItem('invoices', []);
       setItem('stockAdjustments', []);
       setItem('shop_settings', INITIAL_SETTINGS);
+      localStorage.setItem('cloud_api_url', DEFAULT_CLOUD_API);
       localStorage.setItem('appdb_inited', 'true');
     }
     return Promise.resolve();

@@ -63,6 +63,7 @@ var AppDB = (function () {
       setItem('invoices', []);
       setItem('stockAdjustments', []);
       setItem('shop_settings', INITIAL_SETTINGS);
+      localStorage.setItem('cloud_api_url', DEFAULT_CLOUD_API);
       localStorage.setItem('appdb_inited', 'true');
     }
     return Promise.resolve();
@@ -583,7 +584,7 @@ var AppDB = (function () {
 
     formatCurrency: function (num) {
       var n = Number(num) || 0;
-      return '₹' + n.toFixed(2);
+      return 'â‚¹' + n.toFixed(2);
     },
 
     getApiBaseUrl: function () {

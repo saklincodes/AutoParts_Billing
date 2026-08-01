@@ -287,7 +287,7 @@ function loadSettings() {
 loadSettings();
 
 function initCloudSettings() {
-  var stored = localStorage.getItem('cloud_api_url') || '';
+  var stored = localStorage.getItem('cloud_api_url') || (window.AppDB && AppDB.getApiBase ? AppDB.getApiBase() : 'https://autoparts-billing.onrender.com/api');
   var input = document.getElementById('cloudApiUrlInput');
   if (input) input.value = stored;
   testCloudConnection();
@@ -301,24 +301,29 @@ async function testCloudConnection() {
 
   if (url) {
     localStorage.setItem('cloud_api_url', url);
+  } else {
+    url = (window.AppDB && AppDB.getApiBase) ? AppDB.getApiBase() : 'https://autoparts-billing.onrender.com/api';
+    if (input) input.value = url;
   }
 
   if (dot) dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
-  if (text) text.textContent = 'Testing...';
+  if (text) text.textContent = 'Connecting...';
 
-  if (!url) {
-    if (dot) dot.className = 'w-2 h-2 rounded-full bg-error';
-    if (text) text.textContent = 'Disconnected';
-    return;
-  }
+  var wakeTimer = setTimeout(function() {
+    if (text && (text.textContent === 'Connecting...' || text.textContent === 'Testing...')) {
+      text.textContent = 'Waking cloud server... (~30s)';
+    }
+  }, 3500);
 
   var controller = new AbortController();
-  var timer = setTimeout(function() { controller.abort(); }, 20000);
+  var timer = setTimeout(function() { controller.abort(); }, 60000);
 
   try {
     var base = url.replace(/\/+$/, '');
+    if (!base.endsWith('/api')) base += '/api';
     var res = await fetch(base + '/settings/', { signal: controller.signal });
     clearTimeout(timer);
+    clearTimeout(wakeTimer);
     if (res.ok) {
       if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
       if (text) text.textContent = 'Connected to cloud server';
@@ -328,8 +333,9 @@ async function testCloudConnection() {
     }
   } catch (e) {
     clearTimeout(timer);
+    clearTimeout(wakeTimer);
     if (dot) dot.className = 'w-2 h-2 rounded-full bg-error';
-    if (text) text.textContent = 'Disconnected';
+    if (text) text.textContent = (e.name === 'AbortError') ? 'Timeout (Server taking long)' : 'Disconnected';
   }
 }
 

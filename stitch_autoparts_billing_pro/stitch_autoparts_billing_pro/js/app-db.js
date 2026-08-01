@@ -29,31 +29,20 @@ var AppDB = (function () {
 
   var DEFAULT_CLOUD_API = 'https://autoparts-billing.onrender.com/api';
 
-  function isPrivateUrl(u) {
-    try {
-      var host = String(u).split('://')[1].split('/')[0].split(':')[0];
-      if (!host) return true;
-      if (host === 'localhost' || host === '127.0.0.1') return true;
-      if (/^\d+\.\d+\.\d+\.\d+$/.test(host)) {
-        var parts = host.split('.').map(Number);
-        if (parts[0] === 10) return true;
-        if (parts[0] === 192 && parts[1] === 168) return true;
-        if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
-        if (parts[0] === 169 && parts[1] === 254) return true;
-      }
-      return false;
-    } catch (e) { return true; }
+  function isValidUrl(u) {
+    if (!u || typeof u !== 'string') return false;
+    var trimmed = u.trim();
+    return trimmed.indexOf('http://') === 0 || trimmed.indexOf('https://') === 0;
   }
 
   function getApiBase() {
     var storedUrl = localStorage.getItem('cloud_api_url');
-    if (storedUrl && storedUrl.trim() && !isPrivateUrl(storedUrl)) {
+    if (storedUrl && storedUrl.trim() && isValidUrl(storedUrl)) {
       var cleanUrl = storedUrl.trim().replace(/\/+$/, '');
       return cleanUrl.endsWith('/api') ? cleanUrl : (cleanUrl + '/api');
     }
-    if (window.API_BASE && !isPrivateUrl(String(window.API_BASE))) return String(window.API_BASE);
-    if (window.location.protocol.indexOf('http') === 0 && window.location.origin &&
-        window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    if (window.API_BASE && isValidUrl(String(window.API_BASE))) return String(window.API_BASE);
+    if (window.location.protocol.indexOf('http') === 0 && window.location.origin) {
       return window.location.origin + '/api';
     }
     return DEFAULT_CLOUD_API;
@@ -84,7 +73,7 @@ var AppDB = (function () {
       localStorage.setItem('appdb_inited', 'true');
     }
     var currentCloudUrl = localStorage.getItem('cloud_api_url');
-    if (!currentCloudUrl || !currentCloudUrl.trim() || isPrivateUrl(currentCloudUrl)) {
+    if (!currentCloudUrl || !currentCloudUrl.trim() || !isValidUrl(currentCloudUrl)) {
       localStorage.setItem('cloud_api_url', DEFAULT_CLOUD_API);
     }
     return Promise.resolve();

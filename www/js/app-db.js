@@ -79,11 +79,22 @@ var AppDB = (function () {
     return Promise.resolve();
   }
 
+  function fetchWithTimeout(url, options, timeoutMs) {
+    timeoutMs = timeoutMs || 3500;
+    if (typeof AbortController === 'undefined') {
+      return fetch(url, options);
+    }
+    var controller = new AbortController();
+    var timer = setTimeout(function() { controller.abort(); }, timeoutMs);
+    var opts = Object.assign({}, options, { signal: controller.signal });
+    return fetch(url, opts).finally(function() { clearTimeout(timer); });
+  }
+
   return {
     init: function () { return initDB(); },
 
     getProducts: function () {
-      return fetch(getApiBase() + '/products/', { mode: 'cors' })
+      return fetchWithTimeout(getApiBase() + '/products/', { mode: 'cors' }, 3500)
         .then(function (res) {
           if (!res.ok) throw new Error('API error ' + res.status);
           return res.json();
@@ -113,7 +124,7 @@ var AppDB = (function () {
           return items;
         })
         .catch(function (err) {
-          console.warn('Network fetch failed, falling back to local storage', err);
+          console.warn('Network fetch failed or timed out, falling back to local storage', err);
           initDB();
           var items = getItem('products', INITIAL_PRODUCTS);
           items.sort(function(a, b) {

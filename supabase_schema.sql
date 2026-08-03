@@ -130,3 +130,11 @@ VALUES
 (2, 'City Motors', '8765432109', 'WB-02-CD-5678', 12, 45000, true),
 (3, 'Sarah Miller', '7654321098', 'WB-03-EF-9012', 3, 3200, false)
 ON CONFLICT (id) DO NOTHING;
+
+-- Fix Primary Key Sequences for Auto-Increment
+SELECT setval(pg_get_serial_sequence('public.products', 'id'), COALESCE((SELECT MAX(id) FROM public.products), 1));
+SELECT setval(pg_get_serial_sequence('public.customers', 'id'), COALESCE((SELECT MAX(id) FROM public.customers), 1));
+SELECT setval(pg_get_serial_sequence('public.invoices', 'id'), COALESCE((SELECT MAX(id) FROM public.invoices), 1));
+SELECT setval(pg_get_serial_sequence('public.invoice_items', 'id'), COALESCE((SELECT MAX(id) FROM public.invoice_items), 1));
+SELECT setval(pg_get_serial_sequence('public.stock_adjustments', 'id'), COALESCE((SELECT MAX(id) FROM public.stock_adjustments), 1));
+

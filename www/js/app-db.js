@@ -158,6 +158,7 @@ var AppDB = (function () {
       setItem('products', items);
 
       var payload = {
+        id: savedId,
         name: product.name,
         sku: product.sku || ('SKU-' + Math.floor(Math.random() * 8999 + 1000)),
         category: product.category || 'general',
@@ -168,7 +169,6 @@ var AppDB = (function () {
         description: product.description || '',
         image: (product.image && product.image.length < 500000) ? product.image : ''
       };
-      if (isEdit) payload.id = savedId;
 
       var endpoint = isEdit ? ('products?id=eq.' + savedId) : 'products';
       var method = isEdit ? 'PATCH' : 'POST';
@@ -266,12 +266,13 @@ var AppDB = (function () {
       }
       setItem('customers', items);
 
+      var payload = Object.assign({}, customer, { id: savedId });
       var endpoint = isEdit ? ('customers?id=eq.' + savedId) : 'customers';
       var method = isEdit ? 'PATCH' : 'POST';
 
       return fetchSupabaseRest(endpoint, {
         method: method,
-        body: customer
+        body: payload
       }).then(function(res) {
         if (Array.isArray(res) && res.length > 0 && res[0].id) {
           return Number(res[0].id);
@@ -348,6 +349,7 @@ var AppDB = (function () {
       setItem('invoices', invoices);
 
       var invPayload = {
+        id: invRecord.id,
         invoice_no: invoice_no,
         customer_name: invRecord.customer_name,
         customer_phone: invRecord.customer_phone,
@@ -537,6 +539,7 @@ var AppDB = (function () {
       setItem('stockAdjustments', adjustments);
 
       var payload = {
+        id: record.id,
         product_id: data.product_id,
         product_name: data.product_name || '',
         quantity_change: qtyChange,

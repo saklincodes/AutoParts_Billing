@@ -306,7 +306,7 @@ var AppDB = (function () {
 
     createInvoice: function (invoiceData) {
       initDB();
-      var invoice_no = 'INV-' + Date.now();
+      var invoice_no = 'INV-' + String(Date.now()).slice(-6);
       var subtotal = 0;
       var items = invoiceData.items || [];
       var processedItems = [];
@@ -315,9 +315,10 @@ var AppDB = (function () {
 
       items.forEach(function (item) {
         var prodIdx = products.findIndex(function(p) { return Number(p.id) === Number(item.product_id); });
-        var qty = item.quantity || 1;
-        var unitPrice = item.unit_price || (prodIdx !== -1 ? products[prodIdx].price : 0);
-        subtotal += qty * unitPrice;
+        var qty = parseInt(item.quantity) || 1;
+        var unitPrice = parseFloat(item.unit_price) || (prodIdx !== -1 ? products[prodIdx].price : 0);
+        var itemTotal = parseFloat(item.total_price) || (qty * unitPrice);
+        subtotal += itemTotal;
 
         if (prodIdx !== -1) {
           products[prodIdx].stock_qty = Math.max(0, products[prodIdx].stock_qty - qty);
@@ -328,18 +329,22 @@ var AppDB = (function () {
           product_name: item.product_name || (prodIdx !== -1 ? products[prodIdx].name : 'Item'),
           quantity: qty,
           unit_price: unitPrice,
-          total_price: qty * unitPrice
+          total_price: itemTotal,
+          subtotal: itemTotal
         });
       });
 
       setItem('products', products);
 
-      var discount = invoiceData.discount || 0;
-      var tax = invoiceData.tax || 0;
+      var discount = parseFloat(invoiceData.discount) || 0;
+      var tax = parseFloat(invoiceData.tax) || 0;
       var total_amount = subtotal - discount + tax;
 
+      var maxId = invoices.reduce(function(max, inv) { return Math.max(max, Number(inv.id) || 0); }, 0);
+      var newId = maxId + 1;
+
       var invRecord = {
-        id: invoices.length + 1,
+        id: newId,
         invoice_no: invoice_no,
         customer_name: invoiceData.customer_name || 'Walk-in Customer',
         customer_phone: invoiceData.customer_phone || '',
@@ -356,6 +361,8 @@ var AppDB = (function () {
 
       invoices.unshift(invRecord);
       setItem('invoices', invoices);
+      localStorage.setItem('appdb_invoice_' + newId, JSON.stringify(invRecord));
+      localStorage.setItem('appdb_latest_invoice', JSON.stringify(invRecord));
 
       var invPayload = {
         id: invRecord.id,
@@ -391,9 +398,18 @@ var AppDB = (function () {
 
       return fetchSupabaseRest('invoices?select=*&order=id.desc')
         .then(function(items) {
-          if (Array.isArray(items)) {
-            setItem('invoices', items);
-            return items;
+          if (Array.isArray(items) && items.length > 0) {
+            var merged = items.map(function(remoteInv) {
+              var localMatch = localInvoices.find(function(l) { return Number(l.id) === Number(remoteInv.id); });
+              if (localMatch) {
+                return Object.assign({}, remoteInv, {
+                  items: (localMatch.items && localMatch.items.length > 0) ? localMatch.items : remoteInv.items
+                });
+              }
+              return remoteInv;
+            });
+            setItem('invoices', merged);
+            return merged;
           }
           return localInvoices;
         })
@@ -403,20 +419,76 @@ var AppDB = (function () {
     },
 
     getInvoiceDetail: function (id) {
-      return this.getInvoices().then(function (invoices) {
-        var inv = invoices.find(function(i) { return Number(i.id) === Number(id); });
-        if (!inv) return null;
-        var copy = Object.assign({}, inv);
-        copy.items = typeof copy.items === 'string' ? JSON.parse(copy.items) : copy.items;
-        return copy;
-      });
+      initDB();
+      var singleLocal = localStorage.getItem('appdb_invoice_' + id);
+      if (singleLocal) {
+        try {
+          var parsed = JSON.parse(singleLocal);
+          if (parsed && parsed.id) return Promise.resolve(parsed);
+        } catch(e) {}
+      }
+
+      var localInvoices = getItem('invoices', []);
+      var foundLocal = localInvoices.find(function(i) { return Number(i.id) === Number(id); });
+      if (foundLocal && foundLocal.items && foundLocal.items.length > 0) {
+        return Promise.resolve(foundLocal);
+      }
+
+      return fetchSupabaseRest('invoices?id=eq.' + id)
+        .then(function(items) {
+          var inv = (Array.isArray(items) && items.length > 0) ? items[0] : foundLocal;
+          if (!inv) return null;
+
+          if (!inv.items || inv.items.length === 0) {
+            return fetchSupabaseRest('invoice_items?invoice_id=eq.' + id)
+              .then(function(lineItems) {
+                inv.items = Array.isArray(lineItems) ? lineItems : [];
+                return inv;
+              })
+              .catch(function() {
+                return inv;
+              });
+          }
+          return inv;
+        })
+        .catch(function() {
+          return foundLocal || null;
+        });
     },
 
     getRecentInvoices: function (limit) {
       limit = limit || 5;
-      return this.getInvoices().then(function (invoices) {
-        return invoices.slice(0, limit);
-      });
+      initDB();
+      var localInvoices = getItem('invoices', []);
+      var latestSingle = localStorage.getItem('appdb_latest_invoice');
+      if (latestSingle) {
+        try {
+          var latestObj = JSON.parse(latestSingle);
+          if (latestObj && latestObj.id) {
+            var idx = localInvoices.findIndex(function(i) { return Number(i.id) === Number(latestObj.id); });
+            if (idx !== -1) {
+              localInvoices[idx] = Object.assign({}, localInvoices[idx], latestObj);
+            } else {
+              localInvoices.unshift(latestObj);
+            }
+          }
+        } catch(e) {}
+      }
+
+      if (localInvoices.length > 0) {
+        return Promise.resolve(localInvoices.slice(0, limit));
+      }
+
+      return fetchSupabaseRest('invoices?select=*&order=id.desc&limit=' + limit)
+        .then(function(items) {
+          if (Array.isArray(items) && items.length > 0) {
+            return items;
+          }
+          return localInvoices.slice(0, limit);
+        })
+        .catch(function() {
+          return localInvoices.slice(0, limit);
+        });
     },
 
     getReportsData: function (period) {

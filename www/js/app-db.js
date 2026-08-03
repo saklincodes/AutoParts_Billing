@@ -67,11 +67,17 @@ var AppDB = (function () {
     }, options.headers || {});
 
     var fullUrl = SUPABASE_URL + '/rest/v1/' + endpoint;
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var signal = controller ? controller.signal : undefined;
+    var timeoutId = controller ? setTimeout(function() { controller.abort(); }, 5000) : null;
+
     return fetch(fullUrl, {
       method: options.method || 'GET',
       headers: headers,
-      body: options.body ? (typeof options.body === 'string' ? options.body : JSON.stringify(options.body)) : undefined
+      body: options.body ? (typeof options.body === 'string' ? options.body : JSON.stringify(options.body)) : undefined,
+      signal: signal
     }).then(function(res) {
+      if (timeoutId) clearTimeout(timeoutId);
       if (!res.ok) {
         return res.text().then(function(t) { throw new Error('Supabase Error ' + res.status + ': ' + t); });
       }
@@ -80,6 +86,9 @@ var AppDB = (function () {
         return res.json();
       }
       return null;
+    }).catch(function(err) {
+      if (timeoutId) clearTimeout(timeoutId);
+      throw err;
     });
   }
 
@@ -104,39 +113,50 @@ var AppDB = (function () {
     },
 
     getProducts: function () {
+      initDB();
+      var localItems = getItem('products', INITIAL_PRODUCTS);
+
       return fetchSupabaseRest('products?select=*&order=id.desc')
         .then(function (apiItems) {
           if (Array.isArray(apiItems) && apiItems.length > 0) {
-            initDB();
             setItem('products', apiItems);
             return apiItems;
           }
-          throw new Error('Empty or invalid Supabase response');
+          return localItems;
         })
         .catch(function (err) {
           console.warn('Supabase fetch fallback to local storage:', err);
-          initDB();
-          var items = getItem('products', INITIAL_PRODUCTS);
-          items.sort(function(a, b) { return (Number(b.id) || 0) - (Number(a.id) || 0); });
-          return items;
+          return localItems;
         });
     },
 
     getProduct: function (id) {
-      return fetchSupabaseRest('products?id=eq.' + id + '&select=*')
-        .then(function (res) {
-          if (Array.isArray(res) && res.length > 0) return res[0];
-          throw new Error();
-        })
-        .catch(function () {
-          return AppDB.getProducts().then(function(items) {
-            return items.find(function(p) { return Number(p.id) === Number(id); }) || null;
-          });
-        });
+      return this.getProducts().then(function(items) {
+        return items.find(function(p) { return Number(p.id) === Number(id); }) || null;
+      });
     },
 
     saveProduct: function (product) {
+      initDB();
       var isEdit = Boolean(product.id);
+      var items = getItem('products', INITIAL_PRODUCTS);
+
+      if (!product.created_at) product.created_at = new Date().toISOString();
+
+      var savedId;
+      if (isEdit) {
+        savedId = Number(product.id);
+        var idx = items.findIndex(function(p) { return Number(p.id) === savedId; });
+        if (idx !== -1) items[idx] = Object.assign({}, items[idx], product);
+        else items.unshift(product);
+      } else {
+        var maxId = items.reduce(function(max, p) { return Math.max(max, Number(p.id) || 0); }, 0);
+        savedId = maxId + 1;
+        product.id = savedId;
+        items.unshift(product);
+      }
+      setItem('products', items);
+
       var payload = {
         name: product.name,
         sku: product.sku || ('SKU-' + Math.floor(Math.random() * 8999 + 1000)),
@@ -146,59 +166,42 @@ var AppDB = (function () {
         low_stock_qty: parseInt(product.low_stock_qty) || 5,
         brand: product.brand || '',
         description: product.description || '',
-        image: product.image || ''
+        image: (product.image && product.image.length < 500000) ? product.image : ''
       };
-      if (isEdit) payload.id = product.id;
+      if (isEdit) payload.id = savedId;
 
-      var endpoint = isEdit ? ('products?id=eq.' + product.id) : 'products';
+      var endpoint = isEdit ? ('products?id=eq.' + savedId) : 'products';
       var method = isEdit ? 'PATCH' : 'POST';
 
       return fetchSupabaseRest(endpoint, {
         method: method,
         body: payload
-      })
-      .then(function (res) {
-        var savedItem = Array.isArray(res) && res.length > 0 ? res[0] : (res || payload);
-        initDB();
-        var items = getItem('products', INITIAL_PRODUCTS);
-        if (isEdit) {
-          var idx = items.findIndex(function(p) { return Number(p.id) === Number(savedItem.id); });
-          if (idx !== -1) items[idx] = savedItem;
-          else items.unshift(savedItem);
-        } else {
-          items.unshift(savedItem);
+      }).then(function(res) {
+        if (Array.isArray(res) && res.length > 0 && res[0].id) {
+          var realId = Number(res[0].id);
+          var currentItems = getItem('products', []);
+          var pIdx = currentItems.findIndex(function(p) { return Number(p.id) === savedId; });
+          if (pIdx !== -1) {
+            currentItems[pIdx] = res[0];
+            setItem('products', currentItems);
+          }
+          return realId;
         }
-        setItem('products', items);
-        return savedItem.id;
-      })
-      .catch(function (err) {
-        initDB();
-        var items = getItem('products', INITIAL_PRODUCTS);
-        if (!product.created_at) product.created_at = new Date().toISOString();
-
-        if (product.id) {
-          var idx = items.findIndex(function(p) { return Number(p.id) === Number(product.id); });
-          if (idx !== -1) items[idx] = Object.assign({}, items[idx], product);
-          else items.push(product);
-        } else {
-          var maxId = items.reduce(function(max, p) { return Math.max(max, Number(p.id) || 0); }, 0);
-          product.id = maxId + 1;
-          items.unshift(product);
-        }
-        setItem('products', items);
-        return product.id;
+        return savedId;
+      }).catch(function(err) {
+        console.warn('Supabase save background error (saved locally):', err);
+        return savedId;
       });
     },
 
     deleteProduct: function (id) {
+      initDB();
+      var items = getItem('products', []);
+      items = items.filter(function(p) { return Number(p.id) !== Number(id); });
+      setItem('products', items);
+
       return fetchSupabaseRest('products?id=eq.' + id, { method: 'DELETE' })
-        .catch(function (e) {})
-        .then(function () {
-          initDB();
-          var items = getItem('products', []);
-          items = items.filter(function(p) { return Number(p.id) !== Number(id); });
-          setItem('products', items);
-        });
+        .catch(function (e) {});
     },
 
     searchProducts: function (query) {
@@ -222,17 +225,19 @@ var AppDB = (function () {
     },
 
     getCustomers: function () {
+      initDB();
+      var localItems = getItem('customers', INITIAL_CUSTOMERS);
+
       return fetchSupabaseRest('customers?select=*&order=id.desc')
         .then(function(items) {
           if (Array.isArray(items)) {
             setItem('customers', items);
             return items;
           }
-          throw new Error();
+          return localItems;
         })
         .catch(function() {
-          initDB();
-          return getItem('customers', INITIAL_CUSTOMERS);
+          return localItems;
         });
     },
 
@@ -243,42 +248,37 @@ var AppDB = (function () {
     },
 
     saveCustomer: function (customer) {
+      initDB();
       var isEdit = Boolean(customer.id);
-      var endpoint = isEdit ? ('customers?id=eq.' + customer.id) : 'customers';
+      var items = getItem('customers', INITIAL_CUSTOMERS);
+
+      var savedId;
+      if (isEdit) {
+        savedId = Number(customer.id);
+        var idx = items.findIndex(function(c) { return Number(c.id) === savedId; });
+        if (idx !== -1) items[idx] = Object.assign({}, items[idx], customer);
+        else items.unshift(customer);
+      } else {
+        var maxId = items.reduce(function(max, c) { return Math.max(max, Number(c.id) || 0); }, 0);
+        savedId = maxId + 1;
+        customer.id = savedId;
+        items.unshift(customer);
+      }
+      setItem('customers', items);
+
+      var endpoint = isEdit ? ('customers?id=eq.' + savedId) : 'customers';
       var method = isEdit ? 'PATCH' : 'POST';
 
       return fetchSupabaseRest(endpoint, {
         method: method,
         body: customer
-      })
-      .then(function(res) {
-        var saved = Array.isArray(res) && res.length > 0 ? res[0] : (res || customer);
-        initDB();
-        var items = getItem('customers', INITIAL_CUSTOMERS);
-        if (isEdit) {
-          var idx = items.findIndex(function(c) { return Number(c.id) === Number(saved.id); });
-          if (idx !== -1) items[idx] = saved;
-          else items.unshift(saved);
-        } else {
-          items.unshift(saved);
+      }).then(function(res) {
+        if (Array.isArray(res) && res.length > 0 && res[0].id) {
+          return Number(res[0].id);
         }
-        setItem('customers', items);
-        return saved.id;
-      })
-      .catch(function() {
-        initDB();
-        var items = getItem('customers', INITIAL_CUSTOMERS);
-        if (customer.id) {
-          var idx = items.findIndex(function(c) { return Number(c.id) === Number(customer.id); });
-          if (idx !== -1) items[idx] = Object.assign({}, items[idx], customer);
-          else items.push(customer);
-        } else {
-          var maxId = items.reduce(function(max, c) { return Math.max(max, Number(c.id) || 0); }, 0);
-          customer.id = maxId + 1;
-          items.push(customer);
-        }
-        setItem('customers', items);
-        return customer.id;
+        return savedId;
+      }).catch(function() {
+        return savedId;
       });
     },
 
@@ -295,29 +295,41 @@ var AppDB = (function () {
     },
 
     createInvoice: function (invoiceData) {
+      initDB();
       var invoice_no = 'INV-' + Date.now();
       var subtotal = 0;
       var items = invoiceData.items || [];
       var processedItems = [];
+      var products = getItem('products', []);
+      var invoices = getItem('invoices', []);
 
       items.forEach(function (item) {
+        var prodIdx = products.findIndex(function(p) { return Number(p.id) === Number(item.product_id); });
         var qty = item.quantity || 1;
-        var unitPrice = item.unit_price || 0;
+        var unitPrice = item.unit_price || (prodIdx !== -1 ? products[prodIdx].price : 0);
         subtotal += qty * unitPrice;
+
+        if (prodIdx !== -1) {
+          products[prodIdx].stock_qty = Math.max(0, products[prodIdx].stock_qty - qty);
+        }
+
         processedItems.push({
           product_id: item.product_id,
-          product_name: item.product_name || 'Item',
+          product_name: item.product_name || (prodIdx !== -1 ? products[prodIdx].name : 'Item'),
           quantity: qty,
           unit_price: unitPrice,
           total_price: qty * unitPrice
         });
       });
 
+      setItem('products', products);
+
       var discount = invoiceData.discount || 0;
       var tax = invoiceData.tax || 0;
       var total_amount = subtotal - discount + tax;
 
-      var invPayload = {
+      var invRecord = {
+        id: invoices.length + 1,
         invoice_no: invoice_no,
         customer_name: invoiceData.customer_name || 'Walk-in Customer',
         customer_phone: invoiceData.customer_phone || '',
@@ -327,135 +339,73 @@ var AppDB = (function () {
         discount: discount,
         tax: tax,
         total_amount: total_amount,
-        status: invoiceData.status || 'paid'
+        status: invoiceData.status || 'paid',
+        items: processedItems,
+        created_at: new Date().toISOString()
       };
 
-      return fetchSupabaseRest('invoices', { method: 'POST', body: invPayload })
+      invoices.unshift(invRecord);
+      setItem('invoices', invoices);
+
+      var invPayload = {
+        invoice_no: invoice_no,
+        customer_name: invRecord.customer_name,
+        customer_phone: invRecord.customer_phone,
+        vehicle_no: invRecord.vehicle_no,
+        payment_method: invRecord.payment_method,
+        subtotal: subtotal,
+        discount: discount,
+        tax: tax,
+        total_amount: total_amount,
+        status: invRecord.status
+      };
+
+      fetchSupabaseRest('invoices', { method: 'POST', body: invPayload })
       .then(function(savedInvArr) {
         var savedInv = Array.isArray(savedInvArr) && savedInvArr.length > 0 ? savedInvArr[0] : null;
-        if (!savedInv) throw new Error('Failed to create invoice');
+        if (savedInv) {
+          processedItems.forEach(function(it) {
+            it.invoice_id = savedInv.id;
+            fetchSupabaseRest('invoice_items', { method: 'POST', body: it });
+          });
+        }
+      }).catch(function() {});
 
-        var itemPromises = processedItems.map(function(it) {
-          it.invoice_id = savedInv.id;
-          return fetchSupabaseRest('invoice_items', { method: 'POST', body: it });
-        });
-
-        var stockPromises = processedItems.map(function(it) {
-          if (it.product_id) {
-            return AppDB.getProduct(it.product_id).then(function(p) {
-              if (p) {
-                var newQty = Math.max(0, (p.stock_qty || 0) - it.quantity);
-                return fetchSupabaseRest('products?id=eq.' + p.id, {
-                  method: 'PATCH',
-                  body: { stock_qty: newQty }
-                });
-              }
-            }).catch(function() {});
-          }
-        });
-
-        return Promise.all(itemPromises.concat(stockPromises)).then(function() {
-          return { id: savedInv.id, invoice_no: savedInv.invoice_no, total_amount: savedInv.total_amount };
-        });
-      })
-      .catch(function() {
-        initDB();
-        var products = getItem('products', []);
-        var invoices = getItem('invoices', []);
-
-        processedItems = [];
-        subtotal = 0;
-        items.forEach(function (item) {
-          var prodIdx = products.findIndex(function(p) { return Number(p.id) === Number(item.product_id); });
-          if (prodIdx !== -1) {
-            var product = products[prodIdx];
-            var qty = item.quantity || 1;
-            var unitPrice = item.unit_price || product.price;
-            subtotal += qty * unitPrice;
-            product.stock_qty = Math.max(0, product.stock_qty - qty);
-            products[prodIdx] = product;
-
-            processedItems.push({
-              product_id: product.id,
-              product_name: product.name,
-              quantity: qty,
-              unit_price: unitPrice,
-              total_price: qty * unitPrice
-            });
-          }
-        });
-        setItem('products', products);
-
-        total_amount = subtotal - discount + tax;
-        var invRecord = {
-          id: invoices.length + 1,
-          invoice_no: invoice_no,
-          customer_name: invoiceData.customer_name || 'Walk-in Customer',
-          subtotal: subtotal,
-          discount: discount,
-          tax: tax,
-          total_amount: total_amount,
-          status: invoiceData.status || 'paid',
-          items: processedItems,
-          created_at: new Date().toISOString()
-        };
-
-        invoices.push(invRecord);
-        setItem('invoices', invoices);
-        return { id: invRecord.id, invoice_no: invoice_no, total_amount: total_amount };
-      });
+      return Promise.resolve({ id: invRecord.id, invoice_no: invoice_no, total_amount: total_amount });
     },
 
     getInvoices: function () {
+      initDB();
+      var localInvoices = getItem('invoices', []);
+
       return fetchSupabaseRest('invoices?select=*&order=id.desc')
         .then(function(items) {
           if (Array.isArray(items)) {
             setItem('invoices', items);
             return items;
           }
-          throw new Error();
+          return localInvoices;
         })
         .catch(function() {
-          initDB();
-          var invoices = getItem('invoices', []);
-          invoices.sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
-          return invoices;
+          return localInvoices;
         });
     },
 
     getInvoiceDetail: function (id) {
-      return fetchSupabaseRest('invoices?id=eq.' + id + '&select=*,invoice_items(*)')
-        .then(function(res) {
-          if (Array.isArray(res) && res.length > 0) {
-            var inv = res[0];
-            inv.items = inv.invoice_items || [];
-            return inv;
-          }
-          throw new Error();
-        })
-        .catch(function() {
-          return AppDB.getInvoices().then(function (invoices) {
-            var inv = invoices.find(function(i) { return Number(i.id) === Number(id); });
-            if (!inv) return null;
-            var copy = Object.assign({}, inv);
-            copy.items = typeof copy.items === 'string' ? JSON.parse(copy.items) : copy.items;
-            return copy;
-          });
-        });
+      return this.getInvoices().then(function (invoices) {
+        var inv = invoices.find(function(i) { return Number(i.id) === Number(id); });
+        if (!inv) return null;
+        var copy = Object.assign({}, inv);
+        copy.items = typeof copy.items === 'string' ? JSON.parse(copy.items) : copy.items;
+        return copy;
+      });
     },
 
     getRecentInvoices: function (limit) {
       limit = limit || 5;
-      return fetchSupabaseRest('invoices?select=*&order=id.desc&limit=' + limit)
-        .then(function(items) {
-          if (Array.isArray(items)) return items;
-          throw new Error();
-        })
-        .catch(function() {
-          return AppDB.getInvoices().then(function (invoices) {
-            return invoices.slice(0, limit);
-          });
-        });
+      return this.getInvoices().then(function (invoices) {
+        return invoices.slice(0, limit);
+      });
     },
 
     getReportsData: function (period) {
@@ -538,38 +488,22 @@ var AppDB = (function () {
     },
 
     getShopSettings: function () {
-      return fetchSupabaseRest('shop_settings?id=eq.1&select=*')
-        .then(function(res) {
-          if (Array.isArray(res) && res.length > 0) {
-            setItem('shop_settings', res[0]);
-            return res[0];
-          }
-          throw new Error();
-        })
-        .catch(function() {
-          initDB();
-          return getItem('shop_settings', INITIAL_SETTINGS);
-        });
+      initDB();
+      return getItem('shop_settings', INITIAL_SETTINGS);
     },
 
     saveShopSettings: function (settings) {
+      initDB();
       var current = getItem('shop_settings', INITIAL_SETTINGS);
       Object.keys(settings).forEach(function (k) { current[k] = settings[k]; });
-      current.id = 1;
+      setItem('shop_settings', current);
 
-      return fetchSupabaseRest('shop_settings?id=eq.1', {
+      fetchSupabaseRest('shop_settings?id=eq.1', {
         method: 'PATCH',
         body: current
-      })
-      .then(function() {
-        setItem('shop_settings', current);
-        return current;
-      })
-      .catch(function() {
-        initDB();
-        setItem('shop_settings', current);
-        return current;
-      });
+      }).catch(function() {});
+
+      return Promise.resolve(current);
     },
 
     updateShopSetting: function (field, value) {
@@ -579,8 +513,29 @@ var AppDB = (function () {
     },
 
     addStockAdjustment: function (data) {
+      initDB();
       var qtyChange = parseInt(data.quantity_change || data.qty) || 0;
       var reason = data.reason || data.type || 'audit';
+      var products = getItem('products', []);
+      var adjustments = getItem('stockAdjustments', []);
+
+      var prodIdx = products.findIndex(function(p) { return Number(p.id) === Number(data.product_id); });
+      if (prodIdx !== -1) {
+        products[prodIdx].stock_qty = Math.max(0, products[prodIdx].stock_qty + qtyChange);
+        setItem('products', products);
+      }
+
+      var record = {
+        id: adjustments.length + 1,
+        product_id: data.product_id,
+        quantity_change: qtyChange,
+        reason: reason,
+        notes: data.notes || '',
+        created_at: new Date().toISOString()
+      };
+      adjustments.unshift(record);
+      setItem('stockAdjustments', adjustments);
+
       var payload = {
         product_id: data.product_id,
         product_name: data.product_name || '',
@@ -589,45 +544,10 @@ var AppDB = (function () {
         notes: data.notes || ''
       };
 
-      return fetchSupabaseRest('stock_adjustments', { method: 'POST', body: payload })
-      .then(function(res) {
-        var saved = Array.isArray(res) && res.length > 0 ? res[0] : payload;
-        if (data.product_id) {
-          AppDB.getProduct(data.product_id).then(function(p) {
-            if (p) {
-              var newQty = Math.max(0, (p.stock_qty || 0) + qtyChange);
-              fetchSupabaseRest('products?id=eq.' + p.id, {
-                method: 'PATCH',
-                body: { stock_qty: newQty }
-              });
-            }
-          });
-        }
-        return saved;
-      })
-      .catch(function() {
-        initDB();
-        var products = getItem('products', []);
-        var adjustments = getItem('stockAdjustments', []);
+      fetchSupabaseRest('stock_adjustments', { method: 'POST', body: payload })
+        .catch(function() {});
 
-        var prodIdx = products.findIndex(function(p) { return Number(p.id) === Number(data.product_id); });
-        if (prodIdx !== -1) {
-          products[prodIdx].stock_qty = Math.max(0, products[prodIdx].stock_qty + qtyChange);
-          setItem('products', products);
-        }
-
-        var record = {
-          id: adjustments.length + 1,
-          product_id: data.product_id,
-          quantity_change: qtyChange,
-          reason: reason,
-          notes: data.notes || '',
-          created_at: new Date().toISOString()
-        };
-        adjustments.push(record);
-        setItem('stockAdjustments', adjustments);
-        return record;
-      });
+      return Promise.resolve(record);
     },
 
     createStockAdjustment: function (data) {
@@ -635,17 +555,19 @@ var AppDB = (function () {
     },
 
     getStockAdjustments: function () {
+      initDB();
+      var localData = getItem('stockAdjustments', []);
+
       return fetchSupabaseRest('stock_adjustments?select=*&order=id.desc')
         .then(function (data) {
           if (Array.isArray(data)) {
             setItem('stockAdjustments', data);
             return data;
           }
-          throw new Error();
+          return localData;
         })
         .catch(function () {
-          initDB();
-          return getItem('stockAdjustments', []);
+          return localData;
         });
     },
 

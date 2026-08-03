@@ -285,8 +285,6 @@ function loadSettings() {
 }
 loadSettings();
 
-
-
 function exportBackup() {
   AppDB.exportBackupJSON().then(function(jsonStr) {
     var blob = new Blob([jsonStr], {type: 'application/json'});

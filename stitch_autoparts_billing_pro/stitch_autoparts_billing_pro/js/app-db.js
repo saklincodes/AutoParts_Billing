@@ -601,3 +601,71 @@ if (typeof window !== 'undefined') {
     window.scrollBy(0, e.deltaY);
   }, { passive: true });
 }
+
+/* Native Hardware Back Button Navigation Handler for Mobile & Web */
+if (typeof window !== 'undefined') {
+  function handleHardwareBackNavigation() {
+    // 1. Check if camera viewfinder modal or any open modal is active
+    var camModal = document.getElementById('customCameraModal');
+    if (camModal && !camModal.classList.contains('hidden')) {
+      if (typeof stopLiveCameraModal === 'function') {
+        stopLiveCameraModal();
+      } else {
+        camModal.classList.add('hidden');
+      }
+      return true;
+    }
+
+    var modals = document.querySelectorAll('.modal, [id*="modal"], [id*="Modal"]');
+    for (var i = 0; i < modals.length; i++) {
+      var m = modals[i];
+      if (m.id !== 'customCameraModal' && !m.classList.contains('hidden') && m.style.display !== 'none' && m.style.visibility !== 'hidden') {
+        m.classList.add('hidden');
+        if (m.style.display && m.style.display !== 'none') m.style.display = 'none';
+        return true;
+      }
+    }
+
+    // 2. Check current page path
+    var path = (window.location.pathname || '').toLowerCase();
+    var isDashboard = path.endsWith('/dashboard/') || path.endsWith('/dashboard/code.html') || path.endsWith('/www/') || path.endsWith('/www/index.html');
+
+    if (isDashboard) {
+      var AppPlugin = (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) ? window.Capacitor.Plugins.App : null;
+      if (AppPlugin && typeof AppPlugin.minimizeApp === 'function') {
+        AppPlugin.minimizeApp();
+      }
+      return false;
+    }
+
+    // 3. Navigate back to previous step/page
+    if (window.history.length > 1 && document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
+      window.history.back();
+    } else {
+      // Direct parent page routing if no history stack exists
+      if (path.includes('add_edit_product') || path.includes('stock_adjustment')) {
+        window.location.href = '../inventory/code.html';
+      } else if (path.includes('invoice_preview') || path.includes('quick_billing')) {
+        window.location.href = '../new_billing_1/code.html';
+      } else {
+        window.location.href = '../dashboard/code.html';
+      }
+    }
+    return true;
+  }
+
+  function setupBackButtonListener() {
+    var AppPlugin = (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) ? window.Capacitor.Plugins.App : null;
+    if (AppPlugin && typeof AppPlugin.addListener === 'function') {
+      AppPlugin.addListener('backButton', function(ev) {
+        handleHardwareBackNavigation();
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupBackButtonListener);
+  } else {
+    setupBackButtonListener();
+  }
+}

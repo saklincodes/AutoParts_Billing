@@ -1,15 +1,13 @@
 var AppDB = (function () {
+  var SUPABASE_URL = 'https://hnytahwhzxnezwmtfpdb.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable_1OblpXHpDSB1hB2JuppKKQ_MtQWvhB2';
+
   var INITIAL_PRODUCTS = [
     { id: 1, name: 'Brake Pad Set - Front', sku: 'BP-9921', price: 1250, stock_qty: 14, low_stock_qty: 5, category: 'parts', brand: 'OEM', description: 'High-friction pads for heavy-duty SUVs.' },
     { id: 2, name: 'Oil Filter - Synthetic', sku: 'OF-4402', price: 450, stock_qty: 8, low_stock_qty: 5, category: 'fluids', brand: 'K&N', description: 'Premium synthetic media oil filter.' },
     { id: 3, name: 'Ceramic Brake Pads', sku: 'CBP-7812', price: 2450, stock_qty: 2, low_stock_qty: 5, category: 'parts', brand: 'Brembo', description: 'High-performance ceramic brake pads.' },
     { id: 4, name: 'Platinum Battery 12V', sku: 'BAT-750', price: 8500, stock_qty: 24, low_stock_qty: 3, category: 'parts', brand: 'Bosch', description: '750 CCA, Maintenance-free lead-acid.' },
-    { id: 5, name: 'Iridium Spark Plug', sku: 'SPK-0022', price: 780, stock_qty: 148, low_stock_qty: 20, category: 'parts', brand: 'NGK', description: 'Long-lasting ignition for performance engines.' },
-    { id: 6, name: 'K&N High-Flow Oil Filter', sku: 'KN-204', price: 1150, stock_qty: 12, low_stock_qty: 5, category: 'fluids', brand: 'K&N', description: 'High-flow oil filter with premium filtration.' },
-    { id: 7, name: 'Full Synthetic 5W-30 (1qt)', sku: 'SY-530', price: 560, stock_qty: 48, low_stock_qty: 10, category: 'fluids', brand: 'Castrol', description: 'Fully synthetic motor oil.' },
-    { id: 8, name: 'LED Headlamp Bulb', sku: 'LED-HB1', price: 1200, stock_qty: 30, low_stock_qty: 5, category: 'parts', brand: 'Philips', description: 'Ultra-bright LED headlamp bulb.' },
-    { id: 9, name: 'Wiper Blade Set', sku: 'WPR-24', price: 450, stock_qty: 18, low_stock_qty: 5, category: 'parts', brand: 'Bosch', description: 'All-weather silicone wiper blades.' },
-    { id: 10, name: 'Premium Air Filter', sku: 'AF-8801', price: 850, stock_qty: 22, low_stock_qty: 5, category: 'parts', brand: 'K&N', description: 'High-performance reusable air filter.' }
+    { id: 5, name: 'Iridium Spark Plug', sku: 'SPK-0022', price: 780, stock_qty: 148, low_stock_qty: 20, category: 'parts', brand: 'NGK', description: 'Long-lasting ignition for performance engines.' }
   ];
 
   var INITIAL_CUSTOMERS = [
@@ -27,27 +25,6 @@ var AppDB = (function () {
     printer_type: 'thermal'
   };
 
-  var DEFAULT_CLOUD_API = 'https://autoparts-billing.onrender.com/api';
-
-  function isValidUrl(u) {
-    if (!u || typeof u !== 'string') return false;
-    var trimmed = u.trim();
-    return trimmed.indexOf('http://') === 0 || trimmed.indexOf('https://') === 0;
-  }
-
-  function getApiBase() {
-    var storedUrl = localStorage.getItem('cloud_api_url');
-    if (storedUrl && storedUrl.trim() && isValidUrl(storedUrl)) {
-      var cleanUrl = storedUrl.trim().replace(/\/+$/, '');
-      return cleanUrl.endsWith('/api') ? cleanUrl : (cleanUrl + '/api');
-    }
-    if (window.API_BASE && isValidUrl(String(window.API_BASE))) return String(window.API_BASE);
-    if (window.location.protocol.indexOf('http') === 0 && window.location.origin) {
-      return window.location.origin + '/api';
-    }
-    return DEFAULT_CLOUD_API;
-  }
-
   function getItem(key, defaultVal) {
     try {
       var val = localStorage.getItem('appdb_' + key);
@@ -63,82 +40,93 @@ var AppDB = (function () {
   }
 
   function initDB() {
+    try {
+      localStorage.removeItem('supabase_url');
+      localStorage.removeItem('supabase_anon_key');
+      localStorage.removeItem('cloud_api_url');
+    } catch (e) {}
+
     if (!localStorage.getItem('appdb_inited')) {
       setItem('products', INITIAL_PRODUCTS);
       setItem('customers', INITIAL_CUSTOMERS);
       setItem('invoices', []);
       setItem('stockAdjustments', []);
       setItem('shop_settings', INITIAL_SETTINGS);
-      localStorage.setItem('cloud_api_url', DEFAULT_CLOUD_API);
       localStorage.setItem('appdb_inited', 'true');
-    }
-    var currentCloudUrl = localStorage.getItem('cloud_api_url');
-    if (!currentCloudUrl || !currentCloudUrl.trim() || !isValidUrl(currentCloudUrl)) {
-      localStorage.setItem('cloud_api_url', DEFAULT_CLOUD_API);
     }
     return Promise.resolve();
   }
 
-  function fetchWithTimeout(url, options, timeoutMs) {
-    timeoutMs = timeoutMs || 3500;
-    if (typeof AbortController === 'undefined') {
-      return fetch(url, options);
-    }
-    var controller = new AbortController();
-    var timer = setTimeout(function() { controller.abort(); }, timeoutMs);
-    var opts = Object.assign({}, options, { signal: controller.signal });
-    return fetch(url, opts).finally(function() { clearTimeout(timer); });
+  function fetchSupabaseRest(endpoint, options) {
+    options = options || {};
+    var headers = Object.assign({
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    }, options.headers || {});
+
+    var fullUrl = SUPABASE_URL + '/rest/v1/' + endpoint;
+    return fetch(fullUrl, {
+      method: options.method || 'GET',
+      headers: headers,
+      body: options.body ? (typeof options.body === 'string' ? options.body : JSON.stringify(options.body)) : undefined
+    }).then(function(res) {
+      if (!res.ok) {
+        return res.text().then(function(t) { throw new Error('Supabase Error ' + res.status + ': ' + t); });
+      }
+      var contentType = res.headers.get('content-type');
+      if (contentType && contentType.indexOf('application/json') !== -1) {
+        return res.json();
+      }
+      return null;
+    });
   }
 
   return {
     init: function () { return initDB(); },
 
+    getSupabaseCredentials: function () {
+      return { url: SUPABASE_URL, key: SUPABASE_ANON_KEY };
+    },
+
+    testSupabaseConnection: function () {
+      var testUrl = SUPABASE_URL + '/rest/v1/products?select=id&limit=1';
+      return fetch(testUrl, {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+        }
+      }).then(function(res) {
+        if (res.ok) return true;
+        throw new Error('HTTP ' + res.status);
+      });
+    },
+
     getProducts: function () {
-      return fetchWithTimeout(getApiBase() + '/products/', { mode: 'cors' }, 3500)
-        .then(function (res) {
-          if (!res.ok) throw new Error('API error ' + res.status);
-          return res.json();
-        })
-        .then(function (data) {
-          var apiItems = Array.isArray(data) ? data : (data.results || []);
-          initDB();
-          var localItems = getItem('products', []);
-          var mergedMap = {};
-
-          apiItems.forEach(function(item) {
-            if (item && item.id) mergedMap[item.id] = item;
-          });
-
-          localItems.forEach(function(item) {
-            if (item && item.id && !mergedMap[item.id]) {
-              mergedMap[item.id] = item;
-            }
-          });
-
-          var items = Object.values(mergedMap);
-          items.sort(function(a, b) {
-            return (Number(b.id) || 0) - (Number(a.id) || 0);
-          });
-
-          setItem('products', items);
-          return items;
+      return fetchSupabaseRest('products?select=*&order=id.desc')
+        .then(function (apiItems) {
+          if (Array.isArray(apiItems) && apiItems.length > 0) {
+            initDB();
+            setItem('products', apiItems);
+            return apiItems;
+          }
+          throw new Error('Empty or invalid Supabase response');
         })
         .catch(function (err) {
-          console.warn('Network fetch failed or timed out, falling back to local storage', err);
+          console.warn('Supabase fetch fallback to local storage:', err);
           initDB();
           var items = getItem('products', INITIAL_PRODUCTS);
-          items.sort(function(a, b) {
-            return (Number(b.id) || 0) - (Number(a.id) || 0);
-          });
+          items.sort(function(a, b) { return (Number(b.id) || 0) - (Number(a.id) || 0); });
           return items;
         });
     },
 
     getProduct: function (id) {
-      return fetch(getApiBase() + '/products/' + id + '/')
+      return fetchSupabaseRest('products?id=eq.' + id + '&select=*')
         .then(function (res) {
-          if (!res.ok) throw new Error();
-          return res.json();
+          if (Array.isArray(res) && res.length > 0) return res[0];
+          throw new Error();
         })
         .catch(function () {
           return AppDB.getProducts().then(function(items) {
@@ -149,9 +137,6 @@ var AppDB = (function () {
 
     saveProduct: function (product) {
       var isEdit = Boolean(product.id);
-      var url = isEdit ? (getApiBase() + '/products/' + product.id + '/') : (getApiBase() + '/products/');
-      var method = isEdit ? 'PUT' : 'POST';
-
       var payload = {
         name: product.name,
         sku: product.sku || ('SKU-' + Math.floor(Math.random() * 8999 + 1000)),
@@ -163,17 +148,17 @@ var AppDB = (function () {
         description: product.description || '',
         image: product.image || ''
       };
+      if (isEdit) payload.id = product.id;
 
-      return fetch(url, {
+      var endpoint = isEdit ? ('products?id=eq.' + product.id) : 'products';
+      var method = isEdit ? 'PATCH' : 'POST';
+
+      return fetchSupabaseRest(endpoint, {
         method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: payload
       })
       .then(function (res) {
-        if (!res.ok) return res.json().then(function(err) { throw new Error(JSON.stringify(err)); });
-        return res.json();
-      })
-      .then(function (savedItem) {
+        var savedItem = Array.isArray(res) && res.length > 0 ? res[0] : (res || payload);
         initDB();
         var items = getItem('products', INITIAL_PRODUCTS);
         if (isEdit) {
@@ -187,7 +172,6 @@ var AppDB = (function () {
         return savedItem.id;
       })
       .catch(function (err) {
-        console.warn('API save failed, using local storage fallback', err);
         initDB();
         var items = getItem('products', INITIAL_PRODUCTS);
         if (!product.created_at) product.created_at = new Date().toISOString();
@@ -207,7 +191,7 @@ var AppDB = (function () {
     },
 
     deleteProduct: function (id) {
-      return fetch(getApiBase() + '/products/' + id + '/', { method: 'DELETE' })
+      return fetchSupabaseRest('products?id=eq.' + id, { method: 'DELETE' })
         .catch(function (e) {})
         .then(function () {
           initDB();
@@ -238,12 +222,13 @@ var AppDB = (function () {
     },
 
     getCustomers: function () {
-      return fetch(getApiBase() + '/customers/')
-        .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
-        .then(function(data) {
-          var items = Array.isArray(data) ? data : (data.results || []);
-          setItem('customers', items);
-          return items;
+      return fetchSupabaseRest('customers?select=*&order=id.desc')
+        .then(function(items) {
+          if (Array.isArray(items)) {
+            setItem('customers', items);
+            return items;
+          }
+          throw new Error();
         })
         .catch(function() {
           initDB();
@@ -259,16 +244,15 @@ var AppDB = (function () {
 
     saveCustomer: function (customer) {
       var isEdit = Boolean(customer.id);
-      var url = isEdit ? (getApiBase() + '/customers/' + customer.id + '/') : (getApiBase() + '/customers/');
-      var method = isEdit ? 'PUT' : 'POST';
+      var endpoint = isEdit ? ('customers?id=eq.' + customer.id) : 'customers';
+      var method = isEdit ? 'PATCH' : 'POST';
 
-      return fetch(url, {
+      return fetchSupabaseRest(endpoint, {
         method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(customer)
+        body: customer
       })
-      .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
-      .then(function(saved) {
+      .then(function(res) {
+        var saved = Array.isArray(res) && res.length > 0 ? res[0] : (res || customer);
         initDB();
         var items = getItem('customers', INITIAL_CUSTOMERS);
         if (isEdit) {
@@ -311,83 +295,125 @@ var AppDB = (function () {
     },
 
     createInvoice: function (invoiceData) {
-      return fetch(getApiBase() + '/invoices/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(invoiceData)
-      })
-      .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
-      .then(function(saved) {
-        return { id: saved.id, invoice_no: saved.invoice_no, total_amount: saved.total_amount };
+      var invoice_no = 'INV-' + Date.now();
+      var subtotal = 0;
+      var items = invoiceData.items || [];
+      var processedItems = [];
+
+      items.forEach(function (item) {
+        var qty = item.quantity || 1;
+        var unitPrice = item.unit_price || 0;
+        subtotal += qty * unitPrice;
+        processedItems.push({
+          product_id: item.product_id,
+          product_name: item.product_name || 'Item',
+          quantity: qty,
+          unit_price: unitPrice,
+          total_price: qty * unitPrice
+        });
+      });
+
+      var discount = invoiceData.discount || 0;
+      var tax = invoiceData.tax || 0;
+      var total_amount = subtotal - discount + tax;
+
+      var invPayload = {
+        invoice_no: invoice_no,
+        customer_name: invoiceData.customer_name || 'Walk-in Customer',
+        customer_phone: invoiceData.customer_phone || '',
+        vehicle_no: invoiceData.vehicle_no || '',
+        payment_method: invoiceData.payment_method || 'Cash',
+        subtotal: subtotal,
+        discount: discount,
+        tax: tax,
+        total_amount: total_amount,
+        status: invoiceData.status || 'paid'
+      };
+
+      return fetchSupabaseRest('invoices', { method: 'POST', body: invPayload })
+      .then(function(savedInvArr) {
+        var savedInv = Array.isArray(savedInvArr) && savedInvArr.length > 0 ? savedInvArr[0] : null;
+        if (!savedInv) throw new Error('Failed to create invoice');
+
+        var itemPromises = processedItems.map(function(it) {
+          it.invoice_id = savedInv.id;
+          return fetchSupabaseRest('invoice_items', { method: 'POST', body: it });
+        });
+
+        var stockPromises = processedItems.map(function(it) {
+          if (it.product_id) {
+            return AppDB.getProduct(it.product_id).then(function(p) {
+              if (p) {
+                var newQty = Math.max(0, (p.stock_qty || 0) - it.quantity);
+                return fetchSupabaseRest('products?id=eq.' + p.id, {
+                  method: 'PATCH',
+                  body: { stock_qty: newQty }
+                });
+              }
+            }).catch(function() {});
+          }
+        });
+
+        return Promise.all(itemPromises.concat(stockPromises)).then(function() {
+          return { id: savedInv.id, invoice_no: savedInv.invoice_no, total_amount: savedInv.total_amount };
+        });
       })
       .catch(function() {
         initDB();
         var products = getItem('products', []);
-        var customers = getItem('customers', []);
         var invoices = getItem('invoices', []);
 
-        var invoice_no = 'INV-' + Date.now();
-        var subtotal = 0;
-        var items = invoiceData.items || [];
-        var processedItems = [];
-
+        processedItems = [];
+        subtotal = 0;
         items.forEach(function (item) {
           var prodIdx = products.findIndex(function(p) { return Number(p.id) === Number(item.product_id); });
           if (prodIdx !== -1) {
             var product = products[prodIdx];
             var qty = item.quantity || 1;
             var unitPrice = item.unit_price || product.price;
-            var lineSubtotal = qty * unitPrice;
-            subtotal += lineSubtotal;
-
-            product.stock_qty -= qty;
+            subtotal += qty * unitPrice;
+            product.stock_qty = Math.max(0, product.stock_qty - qty);
             products[prodIdx] = product;
 
             processedItems.push({
               product_id: product.id,
               product_name: product.name,
-              product_sku: product.sku,
               quantity: qty,
               unit_price: unitPrice,
-              subtotal: lineSubtotal
+              total_price: qty * unitPrice
             });
           }
         });
-
         setItem('products', products);
 
-        var discount = invoiceData.discount || 0;
-        var tax = invoiceData.tax || 0;
-        var total_amount = subtotal - discount + tax;
-
+        total_amount = subtotal - discount + tax;
         var invRecord = {
           id: invoices.length + 1,
           invoice_no: invoice_no,
-          customer_id: invoiceData.customer_id || null,
           customer_name: invoiceData.customer_name || 'Walk-in Customer',
           subtotal: subtotal,
           discount: discount,
           tax: tax,
           total_amount: total_amount,
           status: invoiceData.status || 'paid',
-          items: JSON.stringify(processedItems),
+          items: processedItems,
           created_at: new Date().toISOString()
         };
 
         invoices.push(invRecord);
         setItem('invoices', invoices);
-
         return { id: invRecord.id, invoice_no: invoice_no, total_amount: total_amount };
       });
     },
 
     getInvoices: function () {
-      return fetch(getApiBase() + '/invoices/')
-        .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
-        .then(function(data) {
-          var items = Array.isArray(data) ? data : (data.results || []);
-          setItem('invoices', items);
-          return items;
+      return fetchSupabaseRest('invoices?select=*&order=id.desc')
+        .then(function(items) {
+          if (Array.isArray(items)) {
+            setItem('invoices', items);
+            return items;
+          }
+          throw new Error();
         })
         .catch(function() {
           initDB();
@@ -398,8 +424,15 @@ var AppDB = (function () {
     },
 
     getInvoiceDetail: function (id) {
-      return fetch(getApiBase() + '/invoice-detail/' + id + '/')
-        .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
+      return fetchSupabaseRest('invoices?id=eq.' + id + '&select=*,invoice_items(*)')
+        .then(function(res) {
+          if (Array.isArray(res) && res.length > 0) {
+            var inv = res[0];
+            inv.items = inv.invoice_items || [];
+            return inv;
+          }
+          throw new Error();
+        })
         .catch(function() {
           return AppDB.getInvoices().then(function (invoices) {
             var inv = invoices.find(function(i) { return Number(i.id) === Number(id); });
@@ -413,8 +446,11 @@ var AppDB = (function () {
 
     getRecentInvoices: function (limit) {
       limit = limit || 5;
-      return fetch(getApiBase() + '/dashboard/recent-invoices/')
-        .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
+      return fetchSupabaseRest('invoices?select=*&order=id.desc&limit=' + limit)
+        .then(function(items) {
+          if (Array.isArray(items)) return items;
+          throw new Error();
+        })
         .catch(function() {
           return AppDB.getInvoices().then(function (invoices) {
             return invoices.slice(0, limit);
@@ -424,92 +460,91 @@ var AppDB = (function () {
 
     getReportsData: function (period) {
       period = period || 'weekly';
-      return fetch(getApiBase() + '/reports/data/?period=' + period)
-        .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
-        .catch(function() {
-          return AppDB.getInvoices().then(function (invoices) {
-            var now = new Date();
-            var startDate;
-            var labelFmt = function (d) { var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; return days[d.getDay()]; };
+      return AppDB.getInvoices().then(function (invoices) {
+        var now = new Date();
+        var startDate;
+        var labelFmt = function (d) { var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; return days[d.getDay()]; };
 
-            switch (period) {
-              case 'daily':
-                startDate = new Date(now);
-                startDate.setDate(startDate.getDate() - 6);
-                break;
-              case 'monthly':
-                startDate = new Date(now);
-                startDate.setDate(startDate.getDate() - 30);
-                labelFmt = function (d) { return d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; };
-                break;
-              case 'yearly':
-                startDate = new Date(now);
-                startDate.setFullYear(startDate.getFullYear() - 1);
-                labelFmt = function (d) { return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; };
-                break;
-              default:
-                startDate = new Date(now);
-                startDate.setDate(startDate.getDate() - 7);
-            }
+        switch (period) {
+          case 'daily':
+            startDate = new Date(now);
+            startDate.setDate(startDate.getDate() - 6);
+            break;
+          case 'monthly':
+            startDate = new Date(now);
+            startDate.setDate(startDate.getDate() - 30);
+            labelFmt = function (d) { return d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; };
+            break;
+          case 'yearly':
+            startDate = new Date(now);
+            startDate.setFullYear(startDate.getFullYear() - 1);
+            labelFmt = function (d) { return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; };
+            break;
+          default:
+            startDate = new Date(now);
+            startDate.setDate(startDate.getDate() - 7);
+        }
 
-            var filtered = invoices.filter(function (inv) {
-              var d = new Date(inv.created_at);
-              return d >= startDate && inv.status === 'paid';
-            });
-
-            var total_revenue = 0;
-            var items_sold = 0;
-            var salesMap = {};
-
-            filtered.forEach(function (inv) {
-              var d = new Date(inv.created_at);
-              var key = labelFmt(d);
-              salesMap[key] = (salesMap[key] || 0) + inv.total_amount;
-              total_revenue += inv.total_amount;
-              var invItems = typeof inv.items === 'string' ? JSON.parse(inv.items) : inv.items;
-              if (Array.isArray(invItems)) {
-                invItems.forEach(function (it) { items_sold += it.quantity; });
-              }
-            });
-
-            var sales_history = Object.keys(salesMap).map(function (key) {
-              return { label: key, amount: salesMap[key] };
-            });
-
-            var avg_per_order = filtered.length > 0 ? Math.round(items_sold / filtered.length) : 0;
-
-            var productQtyMap = {};
-            filtered.forEach(function (inv) {
-              var invItems = typeof inv.items === 'string' ? JSON.parse(inv.items) : inv.items;
-              if (Array.isArray(invItems)) {
-                invItems.forEach(function (it) {
-                  productQtyMap[it.product_name] = (productQtyMap[it.product_name] || 0) + it.quantity;
-                });
-              }
-            });
-
-            var top_products = Object.keys(productQtyMap).map(function (name) {
-              return { name: name, qty: productQtyMap[name] };
-            }).sort(function (a, b) { return b.qty - a.qty; }).slice(0, 5);
-
-            return {
-              total_revenue: total_revenue,
-              items_sold: items_sold,
-              avg_per_order: avg_per_order,
-              change_pct: 0,
-              sales_history: sales_history,
-              top_products: top_products
-            };
-          });
+        var filtered = invoices.filter(function (inv) {
+          var d = new Date(inv.created_at);
+          return d >= startDate && inv.status === 'paid';
         });
+
+        var total_revenue = 0;
+        var items_sold = 0;
+        var salesMap = {};
+
+        filtered.forEach(function (inv) {
+          var d = new Date(inv.created_at);
+          var key = labelFmt(d);
+          salesMap[key] = (salesMap[key] || 0) + (inv.total_amount || 0);
+          total_revenue += (inv.total_amount || 0);
+          var invItems = typeof inv.items === 'string' ? JSON.parse(inv.items) : (inv.items || []);
+          if (Array.isArray(invItems)) {
+            invItems.forEach(function (it) { items_sold += (it.quantity || 1); });
+          }
+        });
+
+        var sales_history = Object.keys(salesMap).map(function (key) {
+          return { label: key, amount: salesMap[key] };
+        });
+
+        var avg_per_order = filtered.length > 0 ? Math.round(items_sold / filtered.length) : 0;
+
+        var productQtyMap = {};
+        filtered.forEach(function (inv) {
+          var invItems = typeof inv.items === 'string' ? JSON.parse(inv.items) : (inv.items || []);
+          if (Array.isArray(invItems)) {
+            invItems.forEach(function (it) {
+              var pName = it.product_name || 'Unknown';
+              productQtyMap[pName] = (productQtyMap[pName] || 0) + (it.quantity || 1);
+            });
+          }
+        });
+
+        var top_products = Object.keys(productQtyMap).map(function (name) {
+          return { name: name, qty: productQtyMap[name] };
+        }).sort(function (a, b) { return b.qty - a.qty; }).slice(0, 5);
+
+        return {
+          total_revenue: total_revenue,
+          items_sold: items_sold,
+          avg_per_order: avg_per_order,
+          change_pct: 0,
+          sales_history: sales_history,
+          top_products: top_products
+        };
+      });
     },
 
     getShopSettings: function () {
-      return fetch(getApiBase() + '/settings/')
-        .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
-        .then(function(data) {
-          setItem('shop_settings', data);
-          return data;
+      return fetchSupabaseRest('shop_settings?id=eq.1&select=*')
+        .then(function(res) {
+          if (Array.isArray(res) && res.length > 0) {
+            setItem('shop_settings', res[0]);
+            return res[0];
+          }
+          throw new Error();
         })
         .catch(function() {
           initDB();
@@ -518,22 +553,20 @@ var AppDB = (function () {
     },
 
     saveShopSettings: function (settings) {
-      return fetch(getApiBase() + '/settings/', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
+      var current = getItem('shop_settings', INITIAL_SETTINGS);
+      Object.keys(settings).forEach(function (k) { current[k] = settings[k]; });
+      current.id = 1;
+
+      return fetchSupabaseRest('shop_settings?id=eq.1', {
+        method: 'PATCH',
+        body: current
       })
-      .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
-      .then(function(data) {
-        var current = getItem('shop_settings', INITIAL_SETTINGS);
-        Object.keys(settings).forEach(function (k) { current[k] = settings[k]; });
+      .then(function() {
         setItem('shop_settings', current);
         return current;
       })
       .catch(function() {
         initDB();
-        var current = getItem('shop_settings', INITIAL_SETTINGS);
-        Object.keys(settings).forEach(function (k) { current[k] = settings[k]; });
         setItem('shop_settings', current);
         return current;
       });
@@ -546,12 +579,32 @@ var AppDB = (function () {
     },
 
     addStockAdjustment: function (data) {
-      return fetch(getApiBase() + '/stock-adjustments/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+      var qtyChange = parseInt(data.quantity_change || data.qty) || 0;
+      var reason = data.reason || data.type || 'audit';
+      var payload = {
+        product_id: data.product_id,
+        product_name: data.product_name || '',
+        quantity_change: qtyChange,
+        reason: reason,
+        notes: data.notes || ''
+      };
+
+      return fetchSupabaseRest('stock_adjustments', { method: 'POST', body: payload })
+      .then(function(res) {
+        var saved = Array.isArray(res) && res.length > 0 ? res[0] : payload;
+        if (data.product_id) {
+          AppDB.getProduct(data.product_id).then(function(p) {
+            if (p) {
+              var newQty = Math.max(0, (p.stock_qty || 0) + qtyChange);
+              fetchSupabaseRest('products?id=eq.' + p.id, {
+                method: 'PATCH',
+                body: { stock_qty: newQty }
+              });
+            }
+          });
+        }
+        return saved;
       })
-      .then(function(res) { if (!res.ok) throw new Error(); return res.json(); })
       .catch(function() {
         initDB();
         var products = getItem('products', []);
@@ -559,23 +612,16 @@ var AppDB = (function () {
 
         var prodIdx = products.findIndex(function(p) { return Number(p.id) === Number(data.product_id); });
         if (prodIdx !== -1) {
-          var qty = Number(data.qty) || 0;
-          if (data.type === 'add' || data.type === 'restock') {
-            products[prodIdx].stock_qty += qty;
-          } else if (data.type === 'remove' || data.type === 'damage') {
-            products[prodIdx].stock_qty = Math.max(0, products[prodIdx].stock_qty - qty);
-          } else if (data.type === 'audit') {
-            products[prodIdx].stock_qty = qty;
-          }
+          products[prodIdx].stock_qty = Math.max(0, products[prodIdx].stock_qty + qtyChange);
           setItem('products', products);
         }
 
         var record = {
           id: adjustments.length + 1,
           product_id: data.product_id,
-          type: data.type,
-          qty: data.qty,
-          reason: data.reason || '',
+          quantity_change: qtyChange,
+          reason: reason,
+          notes: data.notes || '',
           created_at: new Date().toISOString()
         };
         adjustments.push(record);
@@ -589,13 +635,13 @@ var AppDB = (function () {
     },
 
     getStockAdjustments: function () {
-      return fetch(getApiBase() + '/stock-adjustments/', { mode: 'cors' })
-        .then(function (res) {
-          if (!res.ok) throw new Error();
-          return res.json();
-        })
+      return fetchSupabaseRest('stock_adjustments?select=*&order=id.desc')
         .then(function (data) {
-          return Array.isArray(data) ? data : (data.results || []);
+          if (Array.isArray(data)) {
+            setItem('stockAdjustments', data);
+            return data;
+          }
+          throw new Error();
         })
         .catch(function () {
           initDB();
@@ -609,12 +655,12 @@ var AppDB = (function () {
     },
 
     getApiBaseUrl: function () {
-      return getApiBase();
+      return SUPABASE_URL;
     }
   };
 })();
 
-/* Global Mouse Wheel Scroll Engine: Guarantees PC mouse wheel scrolling works 100% anywhere on screen */
+/* Global Mouse Wheel Scroll Engine */
 if (typeof window !== 'undefined') {
   window.addEventListener('wheel', function (e) {
     if (e.defaultPrevented) return;

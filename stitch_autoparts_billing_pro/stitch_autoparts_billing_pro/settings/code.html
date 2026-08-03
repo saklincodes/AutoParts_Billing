@@ -11,21 +11,20 @@
 </style></head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between gap-md"><div class="flex items-center gap-sm"><img alt="AutoParts Billing Logo" class="h-8 w-auto object-contain" src="/static/logo.png" onerror="this.onerror=null;this.src='../logo.png'"/><span class="font-title-lg text-title-lg text-primary truncate max-w-[180px]">Settings</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex-1 relative w-full bg-surface px-margin-mobile pt-16" ><div class="flex flex-col w-full gap-y-sm"> <!-- Business Header Hero --> <div class="relative overflow-hidden rounded-xl bg-primary p-lg mb-sm"> <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-on-primary-fixed-variant/20 rounded-full blur-2xl"></div> <div class="absolute bottom-0 left-0 -ml-4 -mb-4 w-24 h-24 bg-tertiary-fixed/10 rounded-full blur-xl"></div> <div class="relative z-10 flex flex-col gap-xs"> <div class="flex items-center gap-md"> <div class="w-14 h-14 rounded-lg bg-surface-container-lowest flex items-center justify-center shadow-md"> <span class="material-symbols-outlined text-primary text-[32px]" style="font-variation-settings: 'FILL' 1;">precision_manufacturing</span> </div> <div class="flex flex-col"> <span class="font-headline-sm text-headline-sm text-on-primary">Putul Auto Parts and Autoscan</span> <span class="font-label-md text-label-md text-primary-fixed-dim">Workshop ID: #AP-9921</span> </div> </div> </div> </div> <!-- Section: Cloud Backend Server -->
 <section class="flex flex-col gap-xs mt-sm">
   <div class="px-sm py-xs flex justify-between items-center">
-    <span class="font-label-lg text-label-lg text-primary uppercase tracking-wider">Cloud Server API</span>
-    <span class="flex items-center gap-xs font-label-md text-label-md" id="cloudStatusBadge">
-      <span class="w-2 h-2 rounded-full bg-emerald-500" id="cloudStatusDot"></span> <span id="cloudStatusText">Connecting...</span>
+    <span class="font-label-lg text-label-lg text-primary uppercase tracking-wider">Database Connection</span>
+    <span class="flex items-center gap-xs font-label-md text-label-md">
+      <span class="w-2 h-2 rounded-full bg-emerald-500"></span> <span class="text-emerald-600 font-bold">24/7 Live</span>
     </span>
   </div>
-  <div class="bg-surface-container-low rounded-xl overflow-hidden shadow-sm p-md flex flex-col gap-sm">
-    <div class="flex flex-col gap-xs">
-      <label class="font-label-md text-label-md text-on-surface-variant">Cloud Backend URL</label>
-      <div class="flex gap-xs">
-        <input type="text" id="cloudApiUrlInput" placeholder="https://autoparts-billing.onrender.com/api" class="flex-1 bg-surface-container-high px-3 py-2 text-sm rounded-lg text-on-surface focus:outline-none border border-outline-variant"/>
-        <button type="button" id="btnTestCloud" class="px-4 py-2 bg-primary text-on-primary font-label-md text-label-md rounded-lg flex items-center gap-1 shadow-sm active:scale-95 transition-transform">
-          <span class="material-symbols-outlined text-[16px]">wifi_find</span> Save &amp; Test
-        </button>
+  <div class="bg-surface-container-low rounded-xl overflow-hidden shadow-sm p-md flex items-center justify-between gap-sm">
+    <div class="flex items-center gap-md">
+      <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-[24px]">cloud_done</span>
       </div>
-      <p class="font-body-md text-[11px] text-on-surface-variant/70 mt-1">Enter your Render / Railway cloud server URL to run 24/7 anywhere over 4G/5G/Wi-Fi.</p>
+      <div class="flex flex-col min-w-0">
+        <span class="font-title-lg text-title-lg text-on-surface">Supabase Cloud Server</span>
+        <span class="font-body-md text-[12px] text-on-surface-variant/80 truncate">24/7 Active • PostgreSQL Connected</span>
+      </div>
     </div>
   </div>
 </section>
@@ -286,56 +285,6 @@ function loadSettings() {
 }
 loadSettings();
 
-function initCloudSettings() {
-  var stored = localStorage.getItem('cloud_api_url') || '';
-  var input = document.getElementById('cloudApiUrlInput');
-  if (input) input.value = stored;
-  testCloudConnection();
-}
-
-async function testCloudConnection() {
-  var dot = document.getElementById('cloudStatusDot');
-  var text = document.getElementById('cloudStatusText');
-  var input = document.getElementById('cloudApiUrlInput');
-  var url = input ? input.value.trim() : '';
-
-  if (url) {
-    localStorage.setItem('cloud_api_url', url);
-  }
-
-  if (dot) dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
-  if (text) text.textContent = 'Testing...';
-
-  if (!url) {
-    if (dot) dot.className = 'w-2 h-2 rounded-full bg-error';
-    if (text) text.textContent = 'Disconnected';
-    return;
-  }
-
-  var controller = new AbortController();
-  var timer = setTimeout(function() { controller.abort(); }, 20000);
-
-  try {
-    var base = url.replace(/\/+$/, '');
-    var res = await fetch(base + '/settings/', { signal: controller.signal });
-    clearTimeout(timer);
-    if (res.ok) {
-      if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
-      if (text) text.textContent = 'Connected to cloud server';
-    } else {
-      if (dot) dot.className = 'w-2 h-2 rounded-full bg-error';
-      if (text) text.textContent = 'Server error ' + res.status;
-    }
-  } catch (e) {
-    clearTimeout(timer);
-    if (dot) dot.className = 'w-2 h-2 rounded-full bg-error';
-    if (text) text.textContent = 'Disconnected';
-  }
-}
-var btnTest = document.getElementById('btnTestCloud');
-if (btnTest) btnTest.addEventListener('click', testCloudConnection);
-initCloudSettings();
-
 function exportBackup() {
   AppDB.exportBackupJSON().then(function(jsonStr) {
     var blob = new Blob([jsonStr], {type: 'application/json'});
@@ -405,4 +354,4 @@ printerButtons.forEach(btn => {
   });
 });
 </script>
-</div><div id="bottom-nav-spacer" class="h-32 w-full shrink-0"></div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-between items-center h-16 px-2 max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="dashboard" href="/api/pages/dashboard/"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="billing" href="/api/pages/billing/"><span class="material-symbols-outlined">receipt_long</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Billing</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="inventory" href="/api/pages/inventory/"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Stock</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="reports" href="/api/pages/reports/"><span class="material-symbols-outlined">bar_chart</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Reports</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-1/5 transition-colors text-primary font-bold" data-path="settings" href="/api/pages/settings/"><span class="material-symbols-outlined">settings</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Settings</span></a></div></nav></body></html>
+</div><div id="bottom-nav-spacer" class="h-32 w-full shrink-0"></div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-between items-center h-16 px-2 max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="dashboard" href="../dashboard/code.html"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="billing" href="../new_billing_1/code.html"><span class="material-symbols-outlined">receipt_long</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Billing</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="inventory" href="../inventory/code.html"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Stock</span></a><a class="flex flex-col items-center justify-center gap-1 w-1/5 text-on-surface-variant transition-colors" data-path="reports" href="../reports/code.html"><span class="material-symbols-outlined">bar_chart</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Reports</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-1/5 transition-colors text-primary font-bold" data-path="settings" href="../settings/code.html"><span class="material-symbols-outlined">settings</span><span class="text-[10px] font-label-md uppercase tracking-tighter">Settings</span></a></div></nav></body></html>

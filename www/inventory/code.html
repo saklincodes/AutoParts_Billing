@@ -8,14 +8,47 @@
   header { max-width: 430px; left: 50% !important; right: auto !important; transform: translateX(-50%); }
   nav.fixed { max-width: 430px; left: 50% !important; right: auto !important; transform: translateX(-50%); }
 }
-</style></head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between gap-md"><div class="flex items-center gap-sm"><img alt="AutoParts Billing Logo" class="h-8 w-auto object-contain" src="/static/logo.png" onerror="this.onerror=null;this.src='../logo.png'"/><span class="font-title-lg text-title-lg text-primary truncate max-w-[180px]">Inventory</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex-1 relative w-full bg-surface px-margin-mobile pt-16" ><div class="flex flex-col w-full gap-md"> <!-- Search and Filter Header --> <div class="flex flex-col gap-sm sticky top-0 z-10 bg-surface/95 backdrop-blur-sm pb-sm"> <div class="relative group"> <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none"> <span class="material-symbols-outlined text-on-surface-variant">search</span> </div> <input id="productSearch" class="w-full h-12 pl-12 pr-4 bg-surface-container-low text-on-surface rounded-xl focus:outline-none focus:bg-surface-container-high transition-colors font-body-md" placeholder="Search spare parts, brands, or SKU..." type="text"/> </div> <div class="flex gap-sm overflow-x-auto pb-2 no-scrollbar"> <button class="flex items-center gap-xs px-4 py-2 bg-primary text-on-primary rounded-full shrink-0 shadow-sm transition-transform active:scale-95"> <span class="material-symbols-outlined text-[18px]">filter_list</span> <span class="font-label-lg text-label-lg">All Categories</span> </button> <button class="flex items-center gap-xs px-4 py-2 bg-surface-container-high text-on-surface-variant rounded-full shrink-0 transition-transform active:scale-95"> <span class="material-symbols-outlined text-[18px]">settings_input_component</span> <span class="font-label-lg text-label-lg">Engine</span> </button> <button class="flex items-center gap-xs px-4 py-2 bg-surface-container-high text-on-surface-variant rounded-full shrink-0 transition-transform active:scale-95"> <span class="material-symbols-outlined text-[18px]">tire_repair</span> <span class="font-label-lg text-label-lg">Tires</span> </button> <button class="flex items-center gap-xs px-4 py-2 bg-surface-container-high text-on-surface-variant rounded-full shrink-0 transition-transform active:scale-95"> <span class="material-symbols-outlined text-[18px]">lightbulb</span> <span class="font-label-lg text-label-lg">Lighting</span> </button> </div> </div> <!-- Inventory Stats (Subtle Context) --> <div class="flex gap-md mb-2"> <div class="flex-1 bg-surface-container rounded-xl p-3 flex flex-col gap-1"> <span class="text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">Total Items</span> <span class="text-on-surface font-headline-sm text-headline-sm">1,284</span> </div> <div class="flex-1 bg-tertiary-fixed rounded-xl p-3 flex flex-col gap-1"> <span class="text-on-tertiary-fixed-variant font-label-md text-label-md uppercase tracking-wider">Low Stock</span> <span class="text-on-tertiary-fixed font-headline-sm text-headline-sm">12 Items</span> </div> </div> <!-- Product List --> <div class="flex flex-col gap-md" id="productContainer"> </div> <!-- Floating Action Button --> <div class="fixed bottom-20 right-6 flex flex-col gap-3 z-40" id="fab-group"> <a class="w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all" href="../add_edit_product/code.html"> <span class="material-symbols-outlined text-[28px]">add</span> </a> <a class="w-14 h-14 bg-secondary-container text-on-secondary-container rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all" href="../stock_adjustment/code.html"> <span class="material-symbols-outlined text-[28px]">swap_vert</span> </a> </div> <script>
+</style></head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between gap-md"><div class="flex items-center gap-sm"><img alt="AutoParts Billing Logo" class="h-8 w-auto object-contain" src="/static/logo.png" onerror="this.onerror=null;this.src='../logo.png'"/><span class="font-title-lg text-title-lg text-primary truncate max-w-[180px]">Inventory</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex-1 relative w-full bg-surface px-margin-mobile pt-16" ><div class="flex flex-col w-full gap-md"> <!-- Search and Filter Header --> <div class="flex flex-col gap-sm sticky top-0 z-10 bg-surface/95 backdrop-blur-sm pb-sm"> <div class="relative group"> <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none"> <span class="material-symbols-outlined text-on-surface-variant">search</span> </div> <input id="productSearch" class="w-full h-12 pl-12 pr-4 bg-surface-container-low text-on-surface rounded-xl focus:outline-none focus:bg-surface-container-high transition-colors font-body-md" placeholder="Search spare parts, brands, or SKU..." type="text"/> </div> <div class="flex gap-sm overflow-x-auto pb-2 no-scrollbar"> <button class="flex items-center gap-xs px-4 py-2 bg-primary text-on-primary rounded-full shrink-0 shadow-sm transition-transform active:scale-95"> <span class="material-symbols-outlined text-[18px]">filter_list</span> <span class="font-label-lg text-label-lg">All Categories</span> </button> <button class="flex items-center gap-xs px-4 py-2 bg-surface-container-high text-on-surface-variant rounded-full shrink-0 transition-transform active:scale-95"> <span class="material-symbols-outlined text-[18px]">settings_input_component</span> <span class="font-label-lg text-label-lg">Engine</span> </button> <button class="flex items-center gap-xs px-4 py-2 bg-surface-container-high text-on-surface-variant rounded-full shrink-0 transition-transform active:scale-95"> <span class="material-symbols-outlined text-[18px]">tire_repair</span> <span class="font-label-lg text-label-lg">Tires</span> </button> <button class="flex items-center gap-xs px-4 py-2 bg-surface-container-high text-on-surface-variant rounded-full shrink-0 transition-transform active:scale-95"> <span class="material-symbols-outlined text-[18px]">lightbulb</span> <span class="font-label-lg text-label-lg">Lighting</span> </button> </div> </div> <!-- Inventory Stats (Subtle Context) --> <div class="flex gap-md mb-2"> <div class="flex-1 bg-surface-container rounded-xl p-3 flex flex-col gap-1"> <span class="text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">Total Items</span> <span class="text-on-surface font-headline-sm text-headline-sm">1,284</span> </div> <div class="flex-1 bg-tertiary-fixed rounded-xl p-3 flex flex-col gap-1"> <span class="text-on-tertiary-fixed-variant font-label-md text-label-md uppercase tracking-wider">Low Stock</span> <span class="text-on-tertiary-fixed font-headline-sm text-headline-sm">12 Items</span> </div> </div> <!-- Live Connection Diagnostic Banner --> <div id="supabaseStatusBanner" class="w-full mb-2"></div> <!-- Product List --> <div class="flex flex-col gap-md" id="productContainer"> </div> <!-- Floating Action Button --> <div class="fixed bottom-20 right-6 flex flex-col gap-3 z-40" id="fab-group"> <a class="w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all" href="../add_edit_product/code.html"> <span class="material-symbols-outlined text-[28px]">add</span> </a> <a class="w-14 h-14 bg-secondary-container text-on-secondary-container rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all" href="../stock_adjustment/code.html"> <span class="material-symbols-outlined text-[28px]">swap_vert</span> </a> </div> <script>
 let allProducts = [];
 let currentFilter = '';
 
 async function loadProducts(filter) {
   filter = filter || '';
+  var statusBanner = document.getElementById('supabaseStatusBanner');
   try {
+    var isOnline = false;
+    var connError = null;
+    try {
+      await AppDB.testSupabaseConnection();
+      isOnline = true;
+    } catch(err) {
+      connError = err ? err.message : 'Offline';
+    }
+
     allProducts = await AppDB.searchProducts();
+
+    if (statusBanner) {
+      if (isOnline) {
+        statusBanner.className = 'w-full p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-emerald-800 dark:text-emerald-300';
+        statusBanner.innerHTML = `
+          <div class="flex items-center gap-2 text-xs font-semibold">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+            <span>Supabase Cloud Connected • ${allProducts.length} Items Live</span>
+          </div>
+          <button onclick="loadProducts()" class="text-xs underline font-bold px-2 py-1 bg-emerald-500/20 rounded">Refresh</button>
+        `;
+      } else {
+        statusBanner.className = 'w-full p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between text-amber-800 dark:text-amber-300';
+        statusBanner.innerHTML = `
+          <div class="flex items-center gap-2 text-xs font-semibold">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>
+            <span>Local Cache Mode (${connError}) • ${allProducts.length} Items</span>
+          </div>
+          <button onclick="loadProducts()" class="text-xs underline font-bold px-2 py-1 bg-amber-500/20 rounded">Retry</button>
+        `;
+      }
+    }
+
     let filtered = allProducts;
     if (filter) {
       const fLower = filter.toLowerCase();
@@ -82,7 +115,7 @@ function renderProducts(products) {
             </div>
             <div class="flex items-end justify-between">
               <div class="flex flex-col">
-                <span class="text-primary font-headline-sm text-headline-sm">Ã¢â€šÂ¹${priceFormatted}</span>
+                <span class="text-primary font-headline-sm text-headline-sm">₹${priceFormatted}</span>
                 <span class="text-on-surface-variant font-label-md text-label-md">Qty: <span class="${isLow ? 'text-tertiary font-bold' : 'font-bold'}">${p.stock_qty || 0} units</span></span>
               </div>
               <button type="button" class="p-2 text-error hover:bg-error-container/20 rounded-lg cursor-pointer" onclick="event.stopPropagation(); deleteProduct(${p.id}, '${safeName}')">

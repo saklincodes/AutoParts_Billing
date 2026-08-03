@@ -7,7 +7,9 @@ var AppDB = (function () {
     { id: 2, name: 'Oil Filter - Synthetic', sku: 'OF-4402', price: 450, stock_qty: 8, low_stock_qty: 5, category: 'fluids', brand: 'K&N', description: 'Premium synthetic media oil filter.' },
     { id: 3, name: 'Ceramic Brake Pads', sku: 'CBP-7812', price: 2450, stock_qty: 2, low_stock_qty: 5, category: 'parts', brand: 'Brembo', description: 'High-performance ceramic brake pads.' },
     { id: 4, name: 'Platinum Battery 12V', sku: 'BAT-750', price: 8500, stock_qty: 24, low_stock_qty: 3, category: 'parts', brand: 'Bosch', description: '750 CCA, Maintenance-free lead-acid.' },
-    { id: 5, name: 'Iridium Spark Plug', sku: 'SPK-0022', price: 780, stock_qty: 148, low_stock_qty: 20, category: 'parts', brand: 'NGK', description: 'Long-lasting ignition for performance engines.' }
+    { id: 5, name: 'Iridium Spark Plug', sku: 'SPK-0022', price: 780, stock_qty: 148, low_stock_qty: 20, category: 'parts', brand: 'NGK', description: 'Long-lasting ignition for performance engines.' },
+    { id: 6, name: 'Engine Oil 5W-40', sku: 'EO-5W40', price: 1850, stock_qty: 25, low_stock_qty: 5, category: 'fluids', brand: 'Castrol', description: 'Fully synthetic motor oil.' },
+    { id: 7, name: 'Coolant Green 1L', sku: 'CL-001', price: 350, stock_qty: 30, low_stock_qty: 10, category: 'fluids', brand: 'Servo', description: 'Engine coolant fluid.' }
   ];
 
   var INITIAL_CUSTOMERS = [
@@ -28,7 +30,13 @@ var AppDB = (function () {
   function getItem(key, defaultVal) {
     try {
       var val = localStorage.getItem('appdb_' + key);
-      if (val !== null) return JSON.parse(val);
+      if (val !== null) {
+        var parsed = JSON.parse(val);
+        if (Array.isArray(parsed) && parsed.length === 0 && Array.isArray(defaultVal) && defaultVal.length > 0) {
+          return defaultVal;
+        }
+        return parsed;
+      }
     } catch (e) {}
     return defaultVal;
   }
@@ -46,7 +54,8 @@ var AppDB = (function () {
       localStorage.removeItem('cloud_api_url');
     } catch (e) {}
 
-    if (!localStorage.getItem('appdb_inited')) {
+    var prods = getItem('products', []);
+    if (!localStorage.getItem('appdb_inited') || !Array.isArray(prods) || prods.length === 0) {
       setItem('products', INITIAL_PRODUCTS);
       setItem('customers', INITIAL_CUSTOMERS);
       setItem('invoices', []);
@@ -69,7 +78,7 @@ var AppDB = (function () {
     var fullUrl = SUPABASE_URL + '/rest/v1/' + endpoint;
     var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     var signal = controller ? controller.signal : undefined;
-    var timeoutId = controller ? setTimeout(function() { controller.abort(); }, 5000) : null;
+    var timeoutId = controller ? setTimeout(function() { controller.abort(); }, 4000) : null;
 
     return fetch(fullUrl, {
       method: options.method || 'GET',
@@ -196,7 +205,7 @@ var AppDB = (function () {
 
     deleteProduct: function (id) {
       initDB();
-      var items = getItem('products', []);
+      var items = getItem('products', INITIAL_PRODUCTS);
       items = items.filter(function(p) { return Number(p.id) !== Number(id); });
       setItem('products', items);
 
@@ -230,7 +239,7 @@ var AppDB = (function () {
 
       return fetchSupabaseRest('customers?select=*&order=id.desc')
         .then(function(items) {
-          if (Array.isArray(items)) {
+          if (Array.isArray(items) && items.length > 0) {
             setItem('customers', items);
             return items;
           }
@@ -301,7 +310,7 @@ var AppDB = (function () {
       var subtotal = 0;
       var items = invoiceData.items || [];
       var processedItems = [];
-      var products = getItem('products', []);
+      var products = getItem('products', INITIAL_PRODUCTS);
       var invoices = getItem('invoices', []);
 
       items.forEach(function (item) {
@@ -518,7 +527,7 @@ var AppDB = (function () {
       initDB();
       var qtyChange = parseInt(data.quantity_change || data.qty) || 0;
       var reason = data.reason || data.type || 'audit';
-      var products = getItem('products', []);
+      var products = getItem('products', INITIAL_PRODUCTS);
       var adjustments = getItem('stockAdjustments', []);
 
       var prodIdx = products.findIndex(function(p) { return Number(p.id) === Number(data.product_id); });
